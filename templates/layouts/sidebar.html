@@ -1,0 +1,110 @@
+{% load static %}
+<aside class="sidebar">
+    <!-- Brand Header -->
+    <div class="sidebar-brand">
+        <img src="{% static 'brand/logo.png' %}" alt="HRequest Logo">
+        <div class="sidebar-brand-text">
+            <span class="sidebar-brand-name">HRequest</span>
+            <span class="sidebar-brand-sub">HRIS &bull; Est. 2026</span>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <ul class="sidebar-menu">
+        <li class="nav-category">Main</li>
+        <li class="sidebar-nav-item">
+            <a href="{% url 'dashboard' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-grid-1x2"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        {% if is_hr_team %}
+        <li class="nav-category">Management</li>
+        <li class="sidebar-nav-item">
+            <a href="#" class="sidebar-nav-link">
+                <i class="bi bi-people"></i>
+                <span>Employees</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="#" class="sidebar-nav-link">
+                <i class="bi bi-diagram-3"></i>
+                <span>Organization</span>
+            </a>
+        </li>
+        {% endif %}
+
+        <li class="nav-category">Workflows</li>
+        <li class="sidebar-nav-item">
+            <a href="#" class="sidebar-nav-link">
+                <i class="bi bi-calendar-check"></i>
+                <span>Attendance</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="#" class="sidebar-nav-link">
+                <i class="bi bi-file-earmark-check"></i>
+                <span>COE Requests</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="#" class="sidebar-nav-link">
+                <i class="bi bi-cash-stack"></i>
+                <span>Payslips</span>
+            </a>
+        </li>
+        <li class="sidebar-nav-item">
+            <a href="#" class="sidebar-nav-link">
+                <i class="bi bi-megaphone"></i>
+                <span>Announcements</span>
+            </a>
+        </li>
+
+        {% if is_super_admin or is_hr_admin %}
+        <li class="nav-category">Analytics & Logs</li>
+        <li class="sidebar-nav-item">
+            <a href="#" class="sidebar-nav-link">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Reports</span>
+            </a>
+        </li>
+        {% endif %}
+
+        {% if is_super_admin %}
+        <li class="sidebar-nav-item">
+            <a href="{% url 'admin:index' %}" class="sidebar-nav-link" target="_blank">
+                <i class="bi bi-shield-lock"></i>
+                <span>System Admin</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+
+    <!-- Pinned User Card at Bottom of Sidebar -->
+    <div class="sidebar-user">
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-avatar">
+                {{ user.display_name|slice:":1"|upper }}
+            </div>
+            <div class="sidebar-user-details">
+                <div class="sidebar-user-name">{{ user.display_name }}</div>
+                <div class="sidebar-user-role">{{ user.get_role_display }}</div>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-link text-white p-0 dropdown-toggle dropdown-toggle-split" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>My Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                        <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</aside>

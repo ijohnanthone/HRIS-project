@@ -1,0 +1,520 @@
+/* ==========================================================================
+   HRequest HRIS - Official SaaS Design System
+   60/30/10 Color Ratio:
+   - 60% Base / Canvas: #F4F7FB (Cloud White)
+   - 30% Structure / Identity: #174F91 (Corporate Blue)
+   - 10% Accents / Interactive: #36A6D6 (Sky Blue)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Brand Palette */
+    --hr-cloud-white: #F4F7FB;
+    --hr-surface: #FFFFFF;
+    --hr-corporate-blue: #174F91;
+    --hr-corporate-blue-dark: #0F3562;
+    --hr-sky-blue: #36A6D6;
+    --hr-sky-blue-hover: #2B8BB5;
+    --hr-sky-blue-light: #E9F6FC;
+
+    /* Neutrals & Slate */
+    --hr-text-main: #1E293B;
+    --hr-text-muted: #64748B;
+    --hr-border: #E2E8F0;
+    --hr-border-light: #F1F5F9;
+
+    /* Semantic Status */
+    --hr-success-bg: #E8F8F0;
+    --hr-success-text: #0E9F6E;
+    --hr-warning-bg: #FEF9C3;
+    --hr-warning-text: #A16207;
+    --hr-danger-bg: #FEE2E2;
+    --hr-danger-text: #B91C1C;
+    --hr-info-bg: #E0F2FE;
+    --hr-info-text: #0284C7;
+
+    /* Shadows & Radii */
+    --hr-radius: 12px;
+    --hr-radius-sm: 8px;
+    --hr-radius-lg: 16px;
+    --hr-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+    --hr-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --hr-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
+
+    /* Layout metrics */
+    --hr-sidebar-width: 260px;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--hr-cloud-white);
+    color: var(--hr-text-main);
+    min-height: 100vh;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   Typography & Shared Controls
+   ========================================================================== */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--hr-text-main);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+a {
+    color: var(--hr-corporate-blue);
+    text-decoration: none;
+    transition: color 0.15s ease-in-out;
+}
+a:hover {
+    color: var(--hr-sky-blue);
+}
+
+.btn-primary {
+    background-color: var(--hr-sky-blue);
+    border-color: var(--hr-sky-blue);
+    color: #FFFFFF;
+    font-weight: 500;
+    border-radius: var(--hr-radius-sm);
+    padding: 0.55rem 1.25rem;
+    transition: all 0.2s ease;
+}
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--hr-sky-blue-hover);
+    border-color: var(--hr-sky-blue-hover);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(54, 166, 214, 0.25);
+}
+
+.btn-outline-primary {
+    border-color: var(--hr-sky-blue);
+    color: var(--hr-sky-blue);
+    border-radius: var(--hr-radius-sm);
+}
+.btn-outline-primary:hover {
+    background-color: var(--hr-sky-blue);
+    border-color: var(--hr-sky-blue);
+    color: #FFFFFF;
+}
+
+.btn-corporate {
+    background-color: var(--hr-corporate-blue);
+    border-color: var(--hr-corporate-blue);
+    color: #FFFFFF;
+    font-weight: 500;
+    border-radius: var(--hr-radius-sm);
+}
+.btn-corporate:hover {
+    background-color: var(--hr-corporate-blue-dark);
+    border-color: var(--hr-corporate-blue-dark);
+    color: #FFFFFF;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    border: 1px solid var(--hr-border);
+    border-radius: var(--hr-radius-sm);
+    padding: 0.6rem 0.9rem;
+    font-size: 0.925rem;
+    color: var(--hr-text-main);
+    background-color: var(--hr-surface);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--hr-sky-blue);
+    box-shadow: 0 0 0 3px rgba(54, 166, 214, 0.15);
+}
+
+/* ==========================================================================
+   Master App Shell Layout
+   ========================================================================== */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Sidebar (30% Corporate Blue Component) */
+.sidebar {
+    width: var(--hr-sidebar-width);
+    background-color: var(--hr-corporate-blue);
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 2px 0 10px rgba(15, 53, 98, 0.15);
+    transition: width 0.3s ease;
+}
+
+.sidebar-brand {
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar-brand img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #FFFFFF;
+    padding: 2px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.sidebar-brand-text {
+    display: flex;
+    flex-direction: column;
+}
+.sidebar-brand-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+.sidebar-brand-sub {
+    font-size: 0.725rem;
+    color: var(--hr-sky-blue);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.sidebar-menu {
+    flex: 1;
+    padding: 1.25rem 0.85rem;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+}
+
+.nav-category {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    padding: 0.75rem 0.85rem 0.35rem;
+    letter-spacing: 0.06em;
+}
+
+.sidebar-nav-item {
+    margin-bottom: 0.25rem;
+}
+.sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.7rem 1rem;
+    color: rgba(255, 255, 255, 0.82);
+    border-radius: var(--hr-radius-sm);
+    font-size: 0.925rem;
+    font-weight: 500;
+    transition: all 0.18s ease;
+    text-decoration: none;
+}
+.sidebar-nav-link i, .sidebar-nav-link svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+.sidebar-nav-link:hover {
+    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Active Nav Pill (10% Sky Blue Indicator matching Reference) */
+.sidebar-nav-link.active {
+    background: var(--hr-sky-blue);
+    color: #FFFFFF;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(54, 166, 214, 0.3);
+}
+.sidebar-nav-link.active i, .sidebar-nav-link.active svg {
+    opacity: 1;
+}
+
+/* User Profile Badge at bottom of sidebar */
+.sidebar-user {
+    padding: 1rem 1.15rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--hr-corporate-blue-dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.sidebar-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+.sidebar-user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--hr-sky-blue);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+.sidebar-user-details {
+    min-width: 0;
+}
+.sidebar-user-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sidebar-user-role {
+    font-size: 0.725rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* Main Content Area */
+.main-wrapper {
+    flex: 1;
+    margin-left: var(--hr-sidebar-width);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.topbar {
+    height: 68px;
+    background: var(--hr-surface);
+    border-bottom: 1px solid var(--hr-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+.topbar-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--hr-text-main);
+    margin: 0;
+}
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.topbar-search {
+    position: relative;
+    width: 280px;
+}
+.topbar-search input {
+    padding-left: 2.25rem;
+    background: var(--hr-cloud-white);
+    border-color: var(--hr-border);
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+.topbar-search-icon {
+    position: absolute;
+    left: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--hr-text-muted);
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+}
+
+/* ==========================================================================
+   Card System & UI Elements (Reference-Accurate)
+   ========================================================================== */
+.card-hr {
+    background: var(--hr-surface);
+    border: 1px solid var(--hr-border);
+    border-radius: var(--hr-radius);
+    box-shadow: var(--hr-shadow-sm);
+    margin-bottom: 1.5rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card-hr-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--hr-border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.card-hr-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--hr-text-main);
+}
+.card-hr-body {
+    padding: 1.5rem;
+}
+
+/* KPI Hero Highlight Card (The reference's Sky Blue card) */
+.kpi-card-hero {
+    background: var(--hr-sky-blue);
+    color: #FFFFFF;
+    border-radius: var(--hr-radius);
+    padding: 1.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgba(54, 166, 214, 0.28);
+}
+.kpi-card-hero-label {
+    font-size: 0.925rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+.kpi-card-hero-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0.5rem 0 0;
+}
+
+/* Standard Metric Card */
+.kpi-card {
+    background: var(--hr-surface);
+    border: 1px solid var(--hr-border);
+    border-radius: var(--hr-radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--hr-shadow-sm);
+    height: 100%;
+}
+.kpi-card-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--hr-text-muted);
+}
+.kpi-card-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--hr-text-main);
+    margin-top: 0.25rem;
+}
+.kpi-card-sub {
+    font-size: 0.775rem;
+    color: var(--hr-text-muted);
+}
+
+/* Status Badges */
+.badge-status {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.badge-status-active, .badge-status-paid, .badge-status-approved {
+    background: var(--hr-success-bg);
+    color: var(--hr-success-text);
+}
+.badge-status-pending, .badge-status-onboarding, .badge-status-review {
+    background: var(--hr-warning-bg);
+    color: var(--hr-warning-text);
+}
+.badge-status-terminated, .badge-status-rejected, .badge-status-absent {
+    background: var(--hr-danger-bg);
+    color: var(--hr-danger-text);
+}
+.badge-status-info, .badge-status-wfh {
+    background: var(--hr-info-bg);
+    color: var(--hr-info-text);
+}
+
+/* Modern Data Table */
+.table-hr {
+    width: 100%;
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+.table-hr thead th {
+    background: #F8FAFC;
+    color: var(--hr-text-muted);
+    font-size: 0.775rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--hr-border);
+}
+.table-hr tbody td {
+    padding: 1rem 1.25rem;
+    color: var(--hr-text-main);
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--hr-border-light);
+}
+.table-hr tbody tr:hover {
+    background-color: #F8FAFD;
+}
+
+/* ==========================================================================
+   Authentication Pages Layout (Split Canvas with Branding)
+   ========================================================================== */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #174F91 0%, #0F3562 100%);
+    padding: 2rem;
+}
+.auth-card {
+    background: #FFFFFF;
+    border-radius: var(--hr-radius-lg);
+    box-shadow: 0 20px 40px rgba(15, 53, 98, 0.25);
+    width: 100%;
+    max-width: 440px;
+    overflow: hidden;
+}
+.auth-card-header {
+    text-align: center;
+    padding: 2.5rem 2rem 1.5rem;
+}
+.auth-logo {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    padding: 3px;
+    background: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(23, 79, 145, 0.18);
+    margin-bottom: 1rem;
+}
+.auth-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--hr-corporate-blue);
+    margin-bottom: 0.25rem;
+}
+.auth-subtitle {
+    font-size: 0.875rem;
+    color: var(--hr-text-muted);
+}
+.auth-card-body {
+    padding: 0 2rem 2.5rem;
+}

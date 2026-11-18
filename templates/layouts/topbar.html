@@ -1,0 +1,26 @@
+<header class="topbar">
+    <div class="d-flex align-items-center gap-3">
+        <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+    </div>
+
+    <div class="topbar-actions">
+        <!-- Search bar matching UI reference -->
+        <div class="topbar-search d-none d-md-block">
+            <i class="bi bi-search topbar-search-icon"></i>
+            <input type="text" class="form-control" placeholder="Search employees, requests...">
+        </div>
+
+        <!-- Quick Notifications -->
+        <button class="btn btn-light rounded-circle position-relative p-2 border" type="button" title="Notifications">
+            <i class="bi bi-bell text-secondary"></i>
+            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                <span class="visually-hidden">New alerts</span>
+            </span>
+        </button>
+
+        <!-- Current User Role Badge -->
+        <span class="badge bg-light text-primary border px-3 py-2 fw-semibold">
+            <i class="bi bi-shield-check me-1"></i>{{ user.get_role_display }}
+        </span>
+    </div>
+</header>

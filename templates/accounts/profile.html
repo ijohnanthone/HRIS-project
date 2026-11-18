@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile | HRequest{% endblock %}
+{% block page_title %}User Profile & Account Settings{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 col-md-5 mb-4">
+        <div class="card-hr text-center p-4">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold mx-auto mb-3" style="width: 80px; height: 80px; background-color: var(--hr-corporate-blue); font-size: 2rem;">
+                {{ user.display_name|slice:":1"|upper }}
+            </div>
+            <h4 class="mb-1">{{ user.display_name }}</h4>
+            <p class="text-muted small mb-2">{{ user.email }}</p>
+            <div>
+                <span class="badge bg-light text-primary border px-3 py-2 fw-semibold">
+                    <i class="bi bi-shield-check me-1"></i>{{ user.get_role_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8 col-md-7 mb-4">
+        <div class="card-hr">
+            <div class="card-hr-header">
+                <h5 class="card-hr-title"><i class="bi bi-person-gear me-2 text-primary"></i>Account Information</h5>
+            </div>
+            <div class="card-hr-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small fw-semibold">User ID (UUID):</div>
+                    <div class="col-sm-8"><code class="small text-secondary">{{ user.id }}</code></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small fw-semibold">Work Email:</div>
+                    <div class="col-sm-8 fw-medium">{{ user.email }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small fw-semibold">Designated Role:</div>
+                    <div class="col-sm-8">
+                        <span class="badge badge-status badge-status-active">{{ user.get_role_display }}</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small fw-semibold">Account Status:</div>
+                    <div class="col-sm-8">
+                        {% if user.is_active %}
+                            <span class="badge badge-status badge-status-active"><i class="bi bi-check-circle me-1"></i>Active</span>
+                        {% else %}
+                            <span class="badge badge-status badge-status-terminated">Deactivated</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small fw-semibold">Date Registered:</div>
+                    <div class="col-sm-8 text-secondary">{{ user.date_joined|date:"M d, Y - H:i" }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4 text-muted small fw-semibold">Last Login:</div>
+                    <div class="col-sm-8 text-secondary">
+                        {% if user.last_login %}{{ user.last_login|date:"M d, Y - H:i" }}{% else %}First session{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
