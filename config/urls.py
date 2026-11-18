@@ -13,6 +13,7 @@ urlpatterns = [
     path('documents/', include('apps.documents.urls', namespace='documents')),
     path('attendance/', include('apps.attendance.urls', namespace='attendance')),
     path('requests/', include('apps.requests.urls', namespace='requests')),
+    path('payslips/', include('apps.payslips.urls', namespace='payslips')),
 ]
 
 if settings.DEBUG:

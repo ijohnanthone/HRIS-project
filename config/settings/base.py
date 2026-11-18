@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'apps.documents.apps.DocumentsConfig',
     'apps.attendance.apps.AttendanceConfig',
     'apps.requests.apps.RequestsConfig',
+    'apps.payslips.apps.PayslipsConfig',
 ]
 
 MIDDLEWARE = [

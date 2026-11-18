@@ -343,7 +343,39 @@ class Command(BaseCommand):
                     remarks='Initial request submitted for bank verification.'
                 )
 
+        # Seed Payroll Periods & Sample Payslips matching UI Reference Screen 5
+        from apps.payslips.models import PayrollPeriod, PayslipRecord, PayslipStatus
+        period_nov, _ = PayrollPeriod.objects.get_or_create(
+            period_month=11,
+            period_year=2026,
+            defaults={'label': 'November 2026', 'is_active': True}
+        )
+
+        sample_payslips_data = [
+            ('00236', 23789.00, PayslipStatus.PAID),
+            ('00230', 16436.00, PayslipStatus.PAID),
+            ('00231', 22009.00, PayslipStatus.PAID),
+            ('00234', 29333.00, PayslipStatus.PAID),
+        ]
+
+        for emp_id_str, amount, st in sample_payslips_data:
+            target_emp = Employee.objects.filter(employee_id_number=emp_id_str).first()
+            if target_emp:
+                PayslipRecord.objects.get_or_create(
+                    employee=target_emp,
+                    payroll_period=period_nov,
+                    defaults={
+                        'payslip_file': 'payslips/sample_payslip.pdf',
+                        'file_size': 2048,
+                        'total_salary': amount,
+                        'status': st,
+                        'uploaded_by': hr_user,
+                        'is_released': True,
+                    }
+                )
+
         self.stdout.write(self.style.SUCCESS(
             f"Successfully seeded {Department.objects.count()} departments, "
-            f"{Position.objects.count()} positions, {Employee.objects.count()} employee records, documents, and COE templates!"
+            f"{Position.objects.count()} positions, {Employee.objects.count()} employee records, "
+            f"documents, COE templates, and payslips!"
         ))
