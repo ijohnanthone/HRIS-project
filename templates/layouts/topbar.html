@@ -10,13 +10,43 @@
             <input type="text" class="form-control" placeholder="Search employees, requests...">
         </div>
 
-        <!-- Quick Notifications -->
-        <button class="btn btn-light rounded-circle position-relative p-2 border" type="button" title="Notifications">
-            <i class="bi bi-bell text-secondary"></i>
-            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                <span class="visually-hidden">New alerts</span>
-            </span>
-        </button>
+        <!-- Notifications Dropdown -->
+        <div class="dropdown">
+            <button class="btn btn-light rounded-circle position-relative p-2 border" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                <i class="bi bi-bell text-secondary"></i>
+                {% if unread_notifications_count > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                    {{ unread_notifications_count }}
+                </span>
+                {% endif %}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 p-2" aria-labelledby="notifDropdown" style="width: 320px; max-width: 90vw;">
+                <li class="d-flex justify-content-between align-items-center px-2 py-1 mb-1 border-bottom">
+                    <span class="fw-bold small">Notifications</span>
+                    {% if unread_notifications_count > 0 %}
+                    <span class="badge bg-primary rounded-pill">{{ unread_notifications_count }} new</span>
+                    {% endif %}
+                </li>
+                {% for n in recent_notifications %}
+                <li>
+                    <a class="dropdown-item p-2 rounded small {% if not n.is_read %}bg-light fw-semibold{% endif %}" href="{% url 'core:mark_notification_read' n.id %}">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-bell{% if not n.is_read %}-fill text-primary{% endif %}"></i>
+                            <span class="text-truncate" style="max-width: 220px;">{{ n.title }}</span>
+                        </div>
+                        <div class="text-muted text-truncate" style="font-size: 0.75rem; max-width: 250px;">{{ n.message }}</div>
+                    </a>
+                </li>
+                {% empty %}
+                <li class="text-center py-3 text-muted small">No notifications</li>
+                {% endfor %}
+                <li class="border-top mt-1 pt-1 text-center">
+                    <a class="text-decoration-none small text-primary fw-semibold" href="{% url 'core:notifications' %}">
+                        View All Notifications <i class="bi bi-arrow-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
 
         <!-- Current User Role Badge -->
         <span class="badge bg-light text-primary border px-3 py-2 fw-semibold">

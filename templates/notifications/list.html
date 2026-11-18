@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications | HRequest{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-hr">
+            <div class="card-hr-header d-flex justify-content-between align-items-center">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-bell me-2 text-primary"></i>My Notifications
+                    {% if unread_notifications_count > 0 %}
+                    <span class="badge bg-danger ms-2">{{ unread_notifications_count }} unread</span>
+                    {% endif %}
+                </h5>
+                {% if unread_notifications_count > 0 %}
+                <a href="{% url 'core:mark_all_notifications_read' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-check2-all me-1"></i> Mark All as Read
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="card-hr-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for notif in notifications %}
+                    <div class="list-group-item p-3 d-flex align-items-start justify-content-between gap-3 {% if not notif.is_read %}bg-light border-start border-primary border-3{% endif %}">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="mt-1">
+                                {% if notif.is_read %}
+                                <i class="bi bi-bell text-muted fs-5"></i>
+                                {% else %}
+                                <i class="bi bi-bell-fill text-primary fs-5"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold {% if not notif.is_read %}text-primary{% else %}text-dark{% endif %}">
+                                    {{ notif.title }}
+                                </h6>
+                                <p class="mb-1 text-secondary small">{{ notif.message }}</p>
+                                <span class="text-muted small"><i class="bi bi-clock me-1"></i>{{ notif.created_at|timesince }} ago</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            {% if not notif.is_read %}
+                            <a href="{% url 'core:mark_notification_read' notif.id %}" class="btn btn-sm btn-outline-secondary" title="Mark as read">
+                                <i class="bi bi-check2"></i>
+                            </a>
+                            {% endif %}
+                            {% if notif.link %}
+                            <a href="{% url 'core:mark_notification_read' notif.id %}" class="btn btn-sm btn-primary">
+                                View <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-bell-slash fs-1 d-block mb-2 text-secondary"></i>
+                        No notifications yet.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if is_paginated %}
+            <div class="card-hr-header justify-content-between py-3">
+                <span class="text-muted small">Showing page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

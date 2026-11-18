@@ -14,6 +14,8 @@ urlpatterns = [
     path('attendance/', include('apps.attendance.urls', namespace='attendance')),
     path('requests/', include('apps.requests.urls', namespace='requests')),
     path('payslips/', include('apps.payslips.urls', namespace='payslips')),
+    path('announcements/', include('apps.announcements.urls', namespace='announcements')),
+    path('core/', include('apps.core.urls', namespace='core')),
 ]
 
 if settings.DEBUG:

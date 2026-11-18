@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'apps.attendance.apps.AttendanceConfig',
     'apps.requests.apps.RequestsConfig',
     'apps.payslips.apps.PayslipsConfig',
+    'apps.announcements.apps.AnnouncementsConfig',
 ]
 
 MIDDLEWARE = [

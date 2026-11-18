@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Announcements | HRequest{% endblock %}
+{% block page_title %}Company Announcements{% endblock %}
+
+{% block content %}
+<div class="card-hr">
+    <!-- Filter and Create Header -->
+    <div class="card-hr-header flex-wrap gap-3">
+        <form method="get" class="d-flex align-items-center gap-2">
+            <select name="priority" class="form-select" style="width: 180px;" onchange="this.form.submit()">
+                <option value="">All Priorities</option>
+                {% for p_val, p_lbl in priorities %}
+                <option value="{{ p_val }}" {% if current_priority == p_val %}selected{% endif %}>{{ p_lbl }}</option>
+                {% endfor %}
+            </select>
+            {% if current_priority %}
+            <a href="{% url 'announcements:list' %}" class="btn btn-light border" title="Reset Filter"><i class="bi bi-x-circle"></i></a>
+            {% endif %}
+        </form>
+
+        <div class="ms-auto">
+            {% if can_create %}
+            <a href="{% url 'announcements:create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Post Announcement
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Announcement Feed -->
+    <div class="card-hr-body">
+        <div class="d-flex flex-column gap-3">
+            {% for a in announcements %}
+            <div class="p-3 border rounded-3 bg-white shadow-sm {% if a.is_pinned %}border-primary border-2{% endif %}">
+                <div class="d-flex align-items-start justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        {% if a.is_pinned %}
+                        <span class="badge bg-primary"><i class="bi bi-pin-angle-fill me-1"></i>Pinned</span>
+                        {% endif %}
+                        <span class="badge badge-status {{ a.priority_badge_class }}">{{ a.get_priority_display }}</span>
+                        {% if a.target_department %}
+                        <span class="badge bg-light text-secondary border">{{ a.target_department.name }}</span>
+                        {% else %}
+                        <span class="badge bg-light text-dark border">Company-Wide</span>
+                        {% endif %}
+                    </div>
+                    <span class="small text-muted">{{ a.published_at|date:"F d, Y - H:i" }}</span>
+                </div>
+
+                <h5 class="fw-bold mb-2">
+                    <a href="{% url 'announcements:detail' a.id %}" class="text-dark text-decoration-none hover-primary">
+                        {{ a.title }}
+                    </a>
+                </h5>
+
+                <p class="text-secondary small mb-3">
+                    {{ a.content|truncatewords:45 }}
+                </p>
+
+                <div class="d-flex align-items-center justify-content-between border-top pt-2">
+                    <div class="small text-muted">
+                        Posted by <strong>{{ a.author.display_name }}</strong>
+                    </div>
+                    <a href="{% url 'announcements:detail' a.id %}" class="btn btn-sm btn-outline-primary">
+                        Read Full Bulletin <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-megaphone fs-1 d-block mb-2 text-secondary"></i>
+                No announcements currently posted.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="card-hr-header justify-content-between py-3">
+        <span class="text-muted small">Showing page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+        <ul class="pagination pagination-sm mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

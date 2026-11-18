@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Super Admin Dashboard | HRequest{% endblock %}
+{% block page_title %}System Administration & Telemetry{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="card-hr p-4 mb-4" style="background: linear-gradient(135deg, #174F91 0%, #0F3562 100%); color: #FFFFFF;">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-danger text-white px-2 py-1 small">SUPER ADMIN ACCESS</span>
+                <span class="text-white-50 small">&bull; System Health: Optimal</span>
+            </div>
+            <h3 class="text-white fw-bold mb-1">Control Center, {{ user.display_name }}</h3>
+            <p class="text-white-50 mb-0">System governance, RBAC permissions telemetry, and enterprise audit events.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'admin:index' %}" target="_blank" class="btn btn-warning fw-bold px-3 py-2">
+                <i class="bi bi-shield-lock-fill me-1"></i> Open Django Admin
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Telemetry KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card-hero h-100">
+            <div>
+                <span class="kpi-card-hero-label">System Accounts</span>
+                <div class="kpi-card-hero-value">{{ total_users }}</div>
+            </div>
+            <div class="mt-3 small opacity-75">
+                <i class="bi bi-person-badge me-1"></i>Registered Auth Credentials
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-card-label">Workforce Records</span>
+                <span class="badge badge-status badge-status-active">Active</span>
+            </div>
+            <div class="kpi-card-value">{{ total_employees }}</div>
+            <div class="kpi-card-sub mt-1 text-muted">Across {{ total_departments }} Departments</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-card-label">Admin & HR Staff</span>
+                <span class="badge badge-status badge-status-info">Privileged</span>
+            </div>
+            <div class="kpi-card-value">{{ users_by_role.hr_admin|add:users_by_role.hr_staff }} Users</div>
+            <div class="kpi-card-sub mt-1 text-muted">{{ users_by_role.hr_admin }} HR Admins &bull; {{ users_by_role.hr_staff }} Staff</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-card-label">Standard Employees</span>
+                <span class="badge badge-status badge-status-approved">Portal</span>
+            </div>
+            <div class="kpi-card-value">{{ users_by_role.employee }} Users</div>
+            <div class="kpi-card-sub mt-1 text-muted">Self-Service Access</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Audit Trail -->
+    <div class="col-lg-8">
+        <div class="card-hr h-100">
+            <div class="card-hr-header d-flex justify-content-between align-items-center">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-clock-history text-primary me-2"></i>Recent Security & Audit Logs
+                </h5>
+                <span class="badge bg-light text-secondary border">Real-Time Monitor</span>
+            </div>
+            <div class="card-hr-body p-0">
+                <div class="table-responsive">
+                    <table class="table-hr mb-0">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Actor</th>
+                                <th>Action</th>
+                                <th>Target Entity</th>
+                                <th>IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in audit_logs %}
+                            <tr>
+                                <td class="small text-muted">{{ log.timestamp|date:"M d, H:i:s" }}</td>
+                                <td>
+                                    <strong>{{ log.actor.display_name|default:"System Engine" }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-primary border">{{ log.action }}</span>
+                                </td>
+                                <td class="small text-muted">{{ log.model_name }} #{{ log.object_id }}</td>
+                                <td class="small font-monospace">{{ log.ip_address|default:"127.0.0.1" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No audit events recorded yet. System activities are tracked on state changes.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Quick Links & Bulletins -->
+    <div class="col-lg-4">
+        <div class="card-hr mb-4">
+            <div class="card-hr-header">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-gear-wide-connected text-primary me-2"></i>Administration Tools
+                </h5>
+            </div>
+            <div class="card-hr-body d-flex flex-column gap-2">
+                <a href="{% url 'admin:accounts_customuser_changelist' %}" target="_blank" class="btn btn-outline-primary text-start d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-people me-2"></i>Manage User Accounts</span>
+                    <i class="bi bi-box-arrow-up-right"></i>
+                </a>
+                <a href="{% url 'employees:list' %}" class="btn btn-outline-primary text-start d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-person-vcard me-2"></i>Employee Master Directory</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'announcements:create' %}" class="btn btn-outline-primary text-start d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-megaphone me-2"></i>Broadcast System Notice</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="card-hr">
+            <div class="card-hr-header d-flex justify-content-between align-items-center">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-megaphone text-primary me-2"></i>Active Bulletins
+                </h5>
+                <a href="{% url 'announcements:list' %}" class="btn btn-sm btn-link text-decoration-none">View All</a>
+            </div>
+            <div class="card-hr-body p-3">
+                {% for a in recent_announcements %}
+                <div class="border-bottom pb-2 mb-2">
+                    <div class="d-flex align-items-center gap-1 mb-1">
+                        <span class="badge badge-status {{ a.priority_badge_class }}">{{ a.get_priority_display }}</span>
+                        <small class="text-muted ms-auto">{{ a.published_at|date:"M d" }}</small>
+                    </div>
+                    <a href="{% url 'announcements:detail' a.id %}" class="fw-semibold text-dark text-decoration-none small d-block">
+                        {{ a.title }}
+                    </a>
+                </div>
+                {% empty %}
+                <p class="text-muted small text-center mb-0 py-2">No active announcements</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

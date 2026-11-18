@@ -76,7 +76,7 @@
             {% endif %}
         </li>
         <li class="sidebar-nav-item">
-            <a href="#" class="sidebar-nav-link">
+            <a href="{% url 'announcements:list' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'announcements' %}active{% endif %}">
                 <i class="bi bi-megaphone"></i>
                 <span>Announcements</span>
             </a>

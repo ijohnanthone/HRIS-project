@@ -85,7 +85,42 @@ class AuthenticationViewsTests(TestCase):
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Welcome back')
-        self.assertContains(response, 'Employee')
+        self.assertTemplateUsed(response, 'dashboard/employee.html')
+
+    def test_hr_admin_dashboard_routing(self):
+        hr_admin = User.objects.create_user(
+            email='hr_test@hrequest.local',
+            password='TestPassword2026!',
+            role=UserRole.HR_ADMIN
+        )
+        self.client.login(email='hr_test@hrequest.local', password='TestPassword2026!')
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'dashboard/hr_admin.html')
+        self.assertContains(response, 'Total Employees')
+
+    def test_super_admin_dashboard_routing(self):
+        super_admin = User.objects.create_superuser(
+            email='admin_test@hrequest.local',
+            password='TestPassword2026!'
+        )
+        self.client.login(email='admin_test@hrequest.local', password='TestPassword2026!')
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'dashboard/super_admin.html')
+        self.assertContains(response, 'Control Center')
+
+    def test_hr_staff_dashboard_routing(self):
+        hr_staff = User.objects.create_user(
+            email='staff_test@hrequest.local',
+            password='TestPassword2026!',
+            role=UserRole.HR_STAFF
+        )
+        self.client.login(email='staff_test@hrequest.local', password='TestPassword2026!')
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'dashboard/hr_staff.html')
+        self.assertContains(response, 'HR STAFF OPERATIONS')
 
     def test_logout_redirects_to_login(self):
         self.client.login(email='employee@hrequest.local', password='TestPassword2026!')

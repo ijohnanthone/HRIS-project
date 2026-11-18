@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Post Announcement | HRequest{% endblock %}
+{% block page_title %}Post New Announcement{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-hr">
+            <div class="card-hr-header d-flex justify-content-between align-items-center">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-megaphone me-2 text-primary"></i>Compose Announcement
+                </h5>
+                <a href="{% url 'announcements:list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Feed
+                </a>
+            </div>
+
+            <div class="card-hr-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Priority Level <span class="text-danger">*</span></label>
+                            {{ form.priority }}
+                            {% if form.priority.errors %}
+                            <div class="text-danger small mt-1">{{ form.priority.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Target Department</label>
+                            {{ form.target_department }}
+                            <small class="text-muted d-block mt-1">Leave empty to broadcast company-wide.</small>
+                            {% if form.target_department.errors %}
+                            <div class="text-danger small mt-1">{{ form.target_department.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Announcement Content <span class="text-danger">*</span></label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                        <div class="text-danger small mt-1">{{ form.content.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-check mb-4">
+                        {{ form.is_pinned }}
+                        <label class="form-check-label fw-semibold" for="{{ form.is_pinned.id_for_label }}">
+                            Pin this announcement to top of feed and dashboards
+                        </label>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{% url 'announcements:list' %}" class="btn btn-light border">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-send me-1"></i> Publish Announcement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

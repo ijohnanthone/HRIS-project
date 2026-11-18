@@ -374,8 +374,69 @@ class Command(BaseCommand):
                     }
                 )
 
+        # Seed Announcements
+        from apps.announcements.models import Announcement, AnnouncementPriority
+        from apps.core.models import Notification, AuditLog
+
+        announcement1, _ = Announcement.objects.get_or_create(
+            title="Annual Company All-Hands Meeting & Q4 Strategy Review",
+            defaults={
+                'content': "Dear Team,\n\nPlease join us this Friday at 3:00 PM for the Q4 All-Hands Meeting. Executive leadership will present quarterly milestones, technological roadmaps, and recognize top contributors.\n\nAttendance is mandatory for all divisions.",
+                'priority': AnnouncementPriority.HIGH,
+                'is_pinned': True,
+                'is_published': True,
+                'author': hr_user,
+            }
+        )
+
+        announcement2, _ = Announcement.objects.get_or_create(
+            title="Updated Health and Wellness Benefits Package (2026)",
+            defaults={
+                'content': "We are pleased to introduce enhanced medical, dental, and wellness subsidies starting this month. Check your payslips and benefits portal for enrollment guidelines.",
+                'priority': AnnouncementPriority.NORMAL,
+                'is_pinned': False,
+                'is_published': True,
+                'author': hr_user,
+            }
+        )
+
+        # Seed Notifications
+        if emp_user:
+            Notification.objects.get_or_create(
+                recipient=emp_user,
+                title="Welcome to HRequest HRIS",
+                defaults={
+                    'message': "Your employee portal is active. You can now punch attendance, request COEs, and access payslips.",
+                    'link': '/attendance/my/',
+                    'is_read': False,
+                }
+            )
+
+        if hr_user:
+            Notification.objects.get_or_create(
+                recipient=hr_user,
+                title="New COE Request Submitted",
+                defaults={
+                    'message': "Chris Glasser submitted request COE-2026-0001 for banking review.",
+                    'link': '/requests/',
+                    'is_read': False,
+                }
+            )
+
+        # Seed initial Audit Log
+        AuditLog.objects.get_or_create(
+            action="SYSTEM_INIT",
+            model_name="System",
+            object_id="0",
+            defaults={
+                'actor': admin_user,
+                'changes': {'event': 'Initial seeding of HRequest HRIS master records'},
+                'ip_address': '127.0.0.1'
+            }
+        )
+
         self.stdout.write(self.style.SUCCESS(
             f"Successfully seeded {Department.objects.count()} departments, "
             f"{Position.objects.count()} positions, {Employee.objects.count()} employee records, "
-            f"documents, COE templates, and payslips!"
+            f"documents, COE templates, payslips, announcements, and notifications!"
         ))

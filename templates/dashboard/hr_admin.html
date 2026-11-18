@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block title %}HR Admin Dashboard | HRequest{% endblock %}
+{% block page_title %}Human Resources Management Dashboard{% endblock %}
+
+{% block content %}
+<!-- Welcome & Quick Action Banner (Matching UI Reference Screen 1) -->
+<div class="card-hr p-4 mb-4" style="background: linear-gradient(135deg, #174F91 0%, #1D5FA8 100%); color: #FFFFFF;">
+    <div class="row align-items-center">
+        <div class="col-md-7">
+            <h3 class="text-white fw-bold mb-1">Welcome back, {{ user.display_name }}!</h3>
+            <p class="text-white-50 mb-0">HRequest HR Executive Console &bull; Today is {% now "l, F d, Y" %}</p>
+        </div>
+        <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end flex-wrap">
+            <a href="{% url 'employees:onboard_start' %}" class="btn btn-primary fw-semibold shadow-sm">
+                <i class="bi bi-person-plus-fill me-1"></i> Add Employee
+            </a>
+            <a href="{% url 'announcements:create' %}" class="btn btn-light fw-semibold">
+                <i class="bi bi-megaphone me-1"></i> New Notice
+            </a>
+            <a href="{% url 'attendance:import_upload' %}" class="btn btn-outline-light">
+                <i class="bi bi-file-earmark-arrow-up me-1"></i> Import CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Metrics Grid (10% Sky Blue Hero Card Matching Reference Screen 1) -->
+<div class="row g-3 mb-4">
+    <!-- Hero Card (10% Accent) -->
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card-hero h-100">
+            <div>
+                <span class="kpi-card-hero-label">Total Employees</span>
+                <div class="kpi-card-hero-value">{{ total_employees }}</div>
+            </div>
+            <div class="mt-3 small opacity-75">
+                <i class="bi bi-people-fill me-1"></i>Active Workforce Records
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric Card 2 -->
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-card-label">Attendance Today</span>
+                <span class="badge badge-status badge-status-active"><i class="bi bi-clock me-1"></i>Live</span>
+            </div>
+            <div class="kpi-card-value">{{ today_present }} Present</div>
+            <div class="kpi-card-sub mt-1 text-muted">Daily Shift Clock-Ins</div>
+        </div>
+    </div>
+
+    <!-- Metric Card 3 -->
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-card-label">Departments</span>
+                <span class="badge badge-status badge-status-info"><i class="bi bi-diagram-3 me-1"></i>Org Tree</span>
+            </div>
+            <div class="kpi-card-value">{{ total_departments }} Divisions</div>
+            <div class="kpi-card-sub mt-1 text-muted">Engineering, HR, Sales, IT...</div>
+        </div>
+    </div>
+
+    <!-- Metric Card 4 -->
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-card-label">Pending COE Requests</span>
+                {% if pending_coe_count > 0 %}
+                <span class="badge badge-status badge-status-pending">{{ pending_coe_count }} Action Required</span>
+                {% else %}
+                <span class="badge badge-status badge-status-approved">All Clear</span>
+                {% endif %}
+            </div>
+            <div class="kpi-card-value">{{ pending_coe_count }} Pending</div>
+            <div class="kpi-card-sub mt-1 text-muted">Single-Approval Document Queue</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Operations View -->
+<div class="row g-3">
+    <!-- Left Column: Tables -->
+    <div class="col-lg-8">
+        <!-- Pending COE Requests Table -->
+        <div class="card-hr mb-4">
+            <div class="card-hr-header d-flex justify-content-between align-items-center">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-file-earmark-text text-primary me-2"></i>Pending COE Requests
+                </h5>
+                <a href="{% url 'requests:coe_list' %}" class="btn btn-sm btn-outline-primary">
+                    View Master Queue <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="card-hr-body p-0">
+                <div class="table-responsive">
+                    <table class="table-hr mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ticket #</th>
+                                <th>Employee</th>
+                                <th>Purpose</th>
+                                <th>Date Requested</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in recent_requests %}
+                            <tr>
+                                <td class="fw-semibold text-primary font-monospace">{{ req.ticket_number }}</td>
+                                <td>
+                                    <strong>{{ req.employee.full_name }}</strong>
+                                    <div class="small text-muted">{{ req.employee.department.name|default:"General" }}</div>
+                                </td>
+                                <td class="small">{{ req.get_purpose_display }}</td>
+                                <td class="small text-muted">{{ req.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="badge badge-status {{ req.status_badge_class }}">{{ req.get_status_display }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'requests:coe_list' %}" class="btn btn-sm btn-primary">Review</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="bi bi-check2-circle text-success fs-4 d-block mb-1"></i>
+                                    No pending COE requests right now. All tickets are cleared!
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Employees Table -->
+        <div class="card-hr">
+            <div class="card-hr-header d-flex justify-content-between align-items-center">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-people text-primary me-2"></i>Workforce Directory Preview
+                </h5>
+                <a href="{% url 'employees:list' %}" class="btn btn-sm btn-outline-primary">
+                    Full Directory <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="card-hr-body p-0">
+                <div class="table-responsive">
+                    <table class="table-hr mb-0">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Employee ID</th>
+                                <th>Department</th>
+                                <th>Position</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emp in recent_employees %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-circle" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                            {{ emp.first_name|slice:":1" }}{{ emp.last_name|slice:":1" }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ emp.full_name }}</strong>
+                                            <div class="small text-muted">{{ emp.user.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="font-monospace text-primary fw-semibold">{{ emp.employee_id }}</td>
+                                <td>{{ emp.department.name|default:"-" }}</td>
+                                <td>{{ emp.position.title|default:"-" }}</td>
+                                <td>
+                                    <span class="badge badge-status badge-status-active">{{ emp.get_employment_status_display }}</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No employees registered yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Announcements & Quick Shortcuts -->
+    <div class="col-lg-4">
+        <!-- Announcements Bulletin Board -->
+        <div class="card-hr mb-4">
+            <div class="card-hr-header d-flex justify-content-between align-items-center">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-megaphone text-primary me-2"></i>Company Notices
+                </h5>
+                <a href="{% url 'announcements:list' %}" class="btn btn-sm btn-link text-decoration-none p-0">All Notices</a>
+            </div>
+            <div class="card-hr-body p-3">
+                <div class="d-flex flex-column gap-3">
+                    {% for a in recent_announcements %}
+                    <div class="p-2 border rounded bg-white">
+                        <div class="d-flex align-items-center gap-1 mb-1">
+                            {% if a.is_pinned %}
+                            <span class="badge bg-primary" style="font-size: 0.7rem;"><i class="bi bi-pin-angle-fill"></i></span>
+                            {% endif %}
+                            <span class="badge badge-status {{ a.priority_badge_class }}" style="font-size: 0.7rem;">{{ a.get_priority_display }}</span>
+                            <small class="text-muted ms-auto" style="font-size: 0.75rem;">{{ a.published_at|date:"M d" }}</small>
+                        </div>
+                        <a href="{% url 'announcements:detail' a.id %}" class="fw-bold text-dark text-decoration-none small d-block mb-1">
+                            {{ a.title }}
+                        </a>
+                        <p class="text-secondary small mb-0" style="font-size: 0.8rem;">
+                            {{ a.content|truncatewords:15 }}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted small">
+                        No active announcements.<br>
+                        <a href="{% url 'announcements:create' %}" class="btn btn-sm btn-outline-primary mt-2">Create First Bulletin</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Shortcuts -->
+        <div class="card-hr">
+            <div class="card-hr-header">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-lightning-charge text-primary me-2"></i>Management Shortcuts
+                </h5>
+            </div>
+            <div class="card-hr-body d-flex flex-column gap-2 p-3">
+                <a href="{% url 'attendance:roster' %}" class="btn btn-outline-primary text-start d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-calendar-check me-2"></i>Daily Attendance Roster</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'payslips:master_list' %}" class="btn btn-outline-primary text-start d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-cash-stack me-2"></i>Payroll & Payslip Vault</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'organizations:company_structure' %}" class="btn btn-outline-primary text-start d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-diagram-3 me-2"></i>Organizational Tree View</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'employees:export_csv' %}" class="btn btn-outline-secondary text-start d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-download me-2"></i>Export Employee CSV</span>
+                    <i class="bi bi-arrow-down-circle"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
