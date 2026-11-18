@@ -22,13 +22,13 @@
         {% if is_hr_team %}
         <li class="nav-category">Management</li>
         <li class="sidebar-nav-item">
-            <a href="#" class="sidebar-nav-link">
+            <a href="{% url 'employees:list' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'employees' %}active{% endif %}">
                 <i class="bi bi-people"></i>
                 <span>Employees</span>
             </a>
         </li>
         <li class="sidebar-nav-item">
-            <a href="#" class="sidebar-nav-link">
+            <a href="{% url 'organizations:company_structure' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'organizations' %}active{% endif %}">
                 <i class="bi bi-diagram-3"></i>
                 <span>Organization</span>
             </a>

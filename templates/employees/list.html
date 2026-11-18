@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Employees | HRequest{% endblock %}
+{% block page_title %}Employees{% endblock %}
+
+{% block content %}
+<div class="card-hr">
+    <!-- Filter and Action Bar -->
+    <div class="card-hr-header flex-wrap gap-3">
+        <form method="get" class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Search bar -->
+            <div class="input-group" style="width: 260px;">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ current_query }}" class="form-control border-start-0 ps-0" placeholder="Search employee...">
+            </div>
+
+            <!-- Department Filter -->
+            <select name="department" class="form-select" style="width: 200px;" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}" {% if current_department == dept.id|stringformat:"s" %}selected{% endif %}>
+                    {{ dept.name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <!-- Status Filter -->
+            <select name="status" class="form-select" style="width: 170px;" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                {% for s_val, s_label in statuses %}
+                <option value="{{ s_val }}" {% if current_status == s_val %}selected{% endif %}>
+                    {{ s_label }}
+                </option>
+                {% endfor %}
+            </select>
+
+            {% if current_query or current_department or current_status %}
+            <a href="{% url 'employees:list' %}" class="btn btn-light border" title="Reset Filters">
+                <i class="bi bi-x-circle"></i> Clear
+            </a>
+            {% endif %}
+        </form>
+
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            {% if is_super_admin or is_hr_admin %}
+            <a href="{% url 'employees:export_csv' %}" class="btn btn-primary">
+                <i class="bi bi-file-earmark-arrow-down me-1"></i> Export
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-responsive">
+        <table class="table table-hr">
+            <thead>
+                <tr>
+                    <th>ID#</th>
+                    <th>Full Name</th>
+                    <th>Position</th>
+                    <th>Department</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Location</th>
+                    <th>Contacts</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td class="fw-semibold text-secondary small">{{ emp.employee_id_number }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold small flex-shrink-0" 
+                                 style="width: 34px; height: 34px; background-color: var(--hr-corporate-blue);">
+                                {{ emp.initials }}
+                            </div>
+                            <div>
+                                <a href="{% url 'employees:detail' emp.id %}" class="fw-semibold text-dark text-decoration-none">
+                                    {{ emp.full_name }}
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ emp.position.title }}</td>
+                    <td>{{ emp.department.name }}</td>
+                    <td><span class="small text-muted">{{ emp.get_employment_type_display }}</span></td>
+                    <td>
+                        <span class="badge badge-status {{ emp.status_badge_class }}">
+                            {{ emp.get_status_display }}
+                        </span>
+                    </td>
+                    <td><span class="small text-secondary">{{ emp.work_location }}</span></td>
+                    <td>
+                        <div class="small">
+                            <div><i class="bi bi-envelope text-muted me-1"></i>{{ emp.user.email }}</div>
+                            {% if emp.phone_number %}
+                            <div class="text-muted"><i class="bi bi-telephone text-muted me-1"></i>{{ emp.phone_number }}</div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'employees:detail' emp.id %}">
+                                        <i class="bi bi-person me-2"></i>View Profile
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
+                        No employees found matching your search criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    {% if is_paginated %}
+    <div class="card-hr-header justify-content-between py-3">
+        <span class="text-muted small">Showing page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+        <ul class="pagination pagination-sm mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -46,6 +46,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         context['role'] = user.role
         context['role_display'] = user.get_role_display()
+        
+        # Live organizational metrics
+        from apps.employees.models import Employee
+        from apps.organizations.models import Department
+        context['total_employees'] = Employee.objects.count()
+        context['total_departments'] = Department.objects.count()
+        context['recent_employees'] = Employee.objects.select_related('department', 'position', 'user').order_by('-created_at')[:5]
         return context
 
 class UserProfileView(LoginRequiredMixin, TemplateView):

@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     # HRequest Apps
     'apps.core.apps.CoreConfig',
     'apps.accounts.apps.AccountsConfig',
+    'apps.organizations.apps.OrganizationsConfig',
+    'apps.employees.apps.EmployeesConfig',
 ]
 
 MIDDLEWARE = [
