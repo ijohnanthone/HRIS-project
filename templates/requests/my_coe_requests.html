@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}My COE Requests | HRequest{% endblock %}
+{% block page_title %}Certificate of Employment (COE) Requests{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Column: Submit New Request Form -->
+    <div class="col-lg-5 mb-4">
+        <div class="card-hr">
+            <div class="card-hr-header">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-file-earmark-plus text-primary me-2"></i>Request a New Certificate
+                </h5>
+            </div>
+            <div class="card-hr-body">
+                <p class="text-muted small">
+                    An authorized HR Admin will review your ticket and issue an official Certificate of Employment. Once approved, your document will be ready for instant download here.
+                </p>
+
+                <form method="post" action="{% url 'requests:coe_create' %}" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Certification Type *</label>
+                        {{ form.request_type }}
+                        <div class="form-text small text-muted">Select 'With Compensation' if required for visa, loan, or credit checks.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small text-secondary">Stated Purpose of Request *</label>
+                        {{ form.purpose }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold py-2">
+                        <i class="bi bi-send me-1"></i> Submit COE Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: My Requests Queue -->
+    <div class="col-lg-7 mb-4">
+        <div class="card-hr">
+            <div class="card-hr-header">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-clock-history text-primary me-2"></i>My Requests History
+                </h5>
+            </div>
+            <div class="card-hr-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hr mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ticket #</th>
+                                <th>Type</th>
+                                <th>Submitted</th>
+                                <th>Status</th>
+                                <th class="text-end">Certificate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for coe in my_requests %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'requests:coe_detail' coe.id %}" class="fw-bold text-primary text-decoration-none">
+                                        {{ coe.ticket_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="small">{{ coe.get_request_type_display }}</span>
+                                </td>
+                                <td>
+                                    <span class="small text-muted">{{ coe.created_at|date:"M d, Y" }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-status {{ coe.status_badge_class }}">
+                                        {{ coe.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    {% if coe.status == 'FULFILLED' and coe.generated_document %}
+                                    <a href="{% url 'requests:coe_download' coe.id %}" class="btn btn-sm btn-primary" target="_blank">
+                                        <i class="bi bi-download me-1"></i> Download
+                                    </a>
+                                    {% elif coe.status == 'REJECTED' %}
+                                    <span class="text-danger small" title="{{ coe.rejection_reason }}"><i class="bi bi-info-circle me-1"></i>Rejected</span>
+                                    {% else %}
+                                    <span class="text-muted small"><i class="bi bi-hourglass-split me-1"></i>In Review</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-file-earmark-x fs-1 d-block mb-2 text-secondary"></i>
+                                    You have not submitted any COE requests yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

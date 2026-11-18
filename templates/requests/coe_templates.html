@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage COE Templates | HRequest{% endblock %}
+{% block page_title %}COE Template Library{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'requests:coe_list' %}" class="btn btn-light border btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Requests Queue
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card-hr">
+            <div class="card-hr-header">
+                <h5 class="card-hr-title"><i class="bi bi-file-earmark-code text-primary me-2"></i>Active Certificate Templates</h5>
+            </div>
+            <div class="card-hr-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hr mb-0">
+                        <thead>
+                            <tr>
+                                <th>Template Name</th>
+                                <th>Type</th>
+                                <th>Header Title</th>
+                                <th>Signatory</th>
+                                <th>Status</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in templates %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ t.name }}</td>
+                                <td><span class="badge bg-light text-primary border">{{ t.get_template_type_display }}</span></td>
+                                <td>{{ t.header_title }}</td>
+                                <td>{{ t.signatory_name }} &bull; <span class="small text-muted">{{ t.signatory_title }}</span></td>
+                                <td>
+                                    {% if t.is_active %}
+                                    <span class="badge badge-status badge-status-active">Active</span>
+                                    {% else %}
+                                    <span class="badge badge-status badge-status-terminated">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="small text-muted">{{ t.updated_at|date:"M d, Y" }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    No templates stored. Default standard template will be used for auto-generation.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

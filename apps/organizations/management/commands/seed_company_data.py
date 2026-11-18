@@ -310,7 +310,40 @@ class Command(BaseCommand):
                 }
             )
 
+        # Seed default active COE Template & sample pending COE request
+        from apps.requests.models import COETemplate, TemplateType, DocumentRequest, RequestType, RequestStatus, RequestHistory
+        template, _ = COETemplate.objects.get_or_create(
+            name='Standard Corporate COE Template v2026',
+            defaults={
+                'template_type': TemplateType.WITHOUT_COMPENSATION,
+                'header_title': 'CERTIFICATE OF EMPLOYMENT',
+                'signatory_name': 'Paula Mora',
+                'signatory_title': 'Human Resources Manager',
+                'is_active': True,
+                'uploaded_by': hr_user,
+            }
+        )
+
+        if chris:
+            coe_sample, created = DocumentRequest.objects.get_or_create(
+                ticket_number='COE-2026-0001',
+                defaults={
+                    'employee': chris,
+                    'request_type': RequestType.COE_WITHOUT_COMPENSATION,
+                    'purpose': 'Application requirement for Bank Credit Assessment and Residential Lease verification.',
+                    'status': RequestStatus.PENDING,
+                }
+            )
+            if created:
+                RequestHistory.objects.create(
+                    request=coe_sample,
+                    actor=emp_user,
+                    action='SUBMITTED',
+                    to_status=RequestStatus.PENDING,
+                    remarks='Initial request submitted for bank verification.'
+                )
+
         self.stdout.write(self.style.SUCCESS(
             f"Successfully seeded {Department.objects.count()} departments, "
-            f"{Position.objects.count()} positions, {Employee.objects.count()} employee records, and sample documents!"
+            f"{Position.objects.count()} positions, {Employee.objects.count()} employee records, documents, and COE templates!"
         ))

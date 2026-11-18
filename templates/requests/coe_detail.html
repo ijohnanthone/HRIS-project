@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticket {{ coe.ticket_number }} | HRequest{% endblock %}
+{% block page_title %}COE Request Ticket: {{ coe.ticket_number }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    {% if is_hr_team %}
+    <a href="{% url 'requests:coe_list' %}" class="btn btn-light border btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Requests Queue
+    </a>
+    {% else %}
+    <a href="{% url 'requests:my_requests' %}" class="btn btn-light border btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to My Requests
+    </a>
+    {% endif %}
+</div>
+
+<div class="row">
+    <!-- Left Column: Request & Employee Details -->
+    <div class="col-lg-8 mb-4">
+        <div class="card-hr mb-4">
+            <div class="card-hr-header justify-content-between">
+                <div>
+                    <h5 class="card-hr-title">{{ coe.ticket_number }}</h5>
+                    <span class="small text-muted">Submitted on {{ coe.created_at|date:"F d, Y - H:i" }}</span>
+                </div>
+                <span class="badge badge-status {{ coe.status_badge_class }} px-3 py-2 fs-6">
+                    {{ coe.get_status_display }}
+                </span>
+            </div>
+            <div class="card-hr-body">
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Requesting Employee:</div>
+                    <div class="col-sm-8 fw-bold text-dark">
+                        {{ coe.employee.full_name }} (ID: {{ coe.employee.employee_id_number }})
+                    </div>
+                </div>
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Job Title & Dept:</div>
+                    <div class="col-sm-8 text-dark">
+                        {{ coe.employee.position.title }} &bull; {{ coe.employee.department.name }}
+                    </div>
+                </div>
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Employment Terms:</div>
+                    <div class="col-sm-8 text-dark">
+                        {{ coe.employee.get_employment_type_display }} &bull; Hired on {{ coe.employee.hire_date|date:"M d, Y" }}
+                    </div>
+                </div>
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Certification Type:</div>
+                    <div class="col-sm-8">
+                        <span class="badge bg-light text-primary border fw-semibold">
+                            {{ coe.get_request_type_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Stated Purpose:</div>
+                    <div class="col-sm-8 text-dark">
+                        {{ coe.purpose }}
+                    </div>
+                </div>
+
+                {% if coe.status == 'REJECTED' %}
+                <div class="alert alert-danger mt-3 mb-0">
+                    <strong><i class="bi bi-x-circle me-1"></i>Rejection Justification:</strong>
+                    <div class="mt-1">{{ coe.rejection_reason }}</div>
+                </div>
+                {% elif coe.status == 'FULFILLED' and coe.generated_document %}
+                <div class="alert alert-success d-flex align-items-center justify-content-between mt-3 mb-0">
+                    <div>
+                        <i class="bi bi-check2-circle me-1 text-success fs-5"></i>
+                        <strong>Official Certificate Released:</strong> 
+                        Issued via {{ coe.get_fulfillment_method_display }} on {{ coe.document_released_at|date:"M d, Y" }}
+                    </div>
+                    <a href="{% url 'requests:coe_download' coe.id %}" class="btn btn-sm btn-primary" target="_blank">
+                        <i class="bi bi-download me-1"></i> View / Download PDF
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Request Lifecycle History Timeline -->
+        <div class="card-hr">
+            <div class="card-hr-header">
+                <h5 class="card-hr-title"><i class="bi bi-clock-history text-primary me-2"></i>Lifecycle Event Trail</h5>
+            </div>
+            <div class="card-hr-body">
+                <ul class="list-unstyled mb-0">
+                    {% for h in history %}
+                    <li class="d-flex align-items-start gap-3 mb-3 pb-3 border-bottom">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white bg-primary mt-1" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                            <i class="bi bi-check2"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark">{{ h.action }}</div>
+                            <div class="text-secondary small">{{ h.remarks }}</div>
+                            <div class="text-muted small mt-1">
+                                By <strong>{{ h.actor.display_name }}</strong> &bull; {{ h.timestamp|date:"M d, Y - H:i:s" }}
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Single Approval Actions (HR Admin Only) -->
+    <div class="col-lg-4 mb-4">
+        {% if can_approve and coe.status == 'PENDING' %}
+        <div class="card-hr border-primary">
+            <div class="card-hr-header bg-light">
+                <h5 class="card-hr-title text-primary">
+                    <i class="bi bi-shield-check me-2"></i>Single Approval Action
+                </h5>
+            </div>
+            <div class="card-hr-body">
+                <p class="small text-muted mb-3">
+                    As an authorized HR Administrator, you can either automatically compile an official stamped PDF certificate or attach an external pre-signed document.
+                </p>
+
+                <form method="post" action="{% url 'requests:coe_decision' coe.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">Select Decision *</label>
+                        {% for choice in approval_form.decision %}
+                        <div class="form-check mb-2">
+                            {{ choice.tag }}
+                            <label class="form-check-label small fw-medium" for="{{ choice.id_for_label }}">
+                                {{ choice.choice_label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3" id="manualUploadField">
+                        <label class="form-label small fw-semibold text-secondary">Upload Pre-Signed PDF</label>
+                        {{ approval_form.signed_pdf }}
+                    </div>
+
+                    <div class="mb-4" id="rejectionReasonField">
+                        <label class="form-label small fw-semibold text-secondary">Rejection Reason</label>
+                        {{ approval_form.rejection_reason }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold py-2">
+                        <i class="bi bi-check2-circle me-1"></i> Submit Decision
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="card-hr text-center p-4">
+            <i class="bi bi-shield-lock fs-1 text-primary mb-2"></i>
+            <h6 class="fw-bold">Ticket Evaluated</h6>
+            <p class="text-muted small mb-0">
+                This request was evaluated on {{ coe.approved_at|date:"M d, Y" }} by {{ coe.approved_by.display_name|default:"HR Administrator" }}.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

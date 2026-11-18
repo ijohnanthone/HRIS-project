@@ -12,6 +12,7 @@ urlpatterns = [
     path('employees/', include('apps.employees.urls', namespace='employees')),
     path('documents/', include('apps.documents.urls', namespace='documents')),
     path('attendance/', include('apps.attendance.urls', namespace='attendance')),
+    path('requests/', include('apps.requests.urls', namespace='requests')),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}COE Requests Queue | HRequest{% endblock %}
+{% block page_title %}Certificate of Employment (COE) Queue{% endblock %}
+
+{% block content %}
+<div class="card-hr">
+    <!-- Filter and Action Bar -->
+    <div class="card-hr-header flex-wrap gap-3">
+        <form method="get" class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Search -->
+            <div class="input-group" style="width: 240px;">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ request.GET.q }}" class="form-control border-start-0 ps-0" placeholder="Search ticket or employee...">
+            </div>
+
+            <!-- Status Filter -->
+            <select name="status" class="form-select" style="width: 170px;" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                {% for s_val, s_lbl in statuses %}
+                <option value="{{ s_val }}" {% if current_status == s_val %}selected{% endif %}>{{ s_lbl }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Type Filter -->
+            <select name="type" class="form-select" style="width: 210px;" onchange="this.form.submit()">
+                <option value="">All Request Types</option>
+                {% for t_val, t_lbl in types %}
+                <option value="{{ t_val }}" {% if current_type == t_val %}selected{% endif %}>{{ t_lbl }}</option>
+                {% endfor %}
+            </select>
+
+            {% if current_status or current_type or request.GET.q %}
+            <a href="{% url 'requests:coe_list' %}" class="btn btn-light border" title="Reset Filters">
+                <i class="bi bi-x-circle"></i>
+            </a>
+            {% endif %}
+        </form>
+
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            {% if is_super_admin or is_hr_admin %}
+            <a href="{% url 'requests:coe_templates' %}" class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-code me-1"></i> Manage Templates
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-responsive">
+        <table class="table table-hr">
+            <thead>
+                <tr>
+                    <th>Ticket #</th>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Request Type</th>
+                    <th>Submitted Date</th>
+                    <th>Status</th>
+                    <th>Evaluated By</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coe in requests %}
+                <tr>
+                    <td>
+                        <a href="{% url 'requests:coe_detail' coe.id %}" class="fw-bold text-primary text-decoration-none">
+                            {{ coe.ticket_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold small flex-shrink-0"
+                                 style="width: 30px; height: 30px; background-color: var(--hr-corporate-blue); font-size: 0.75rem;">
+                                {{ coe.employee.initials }}
+                            </div>
+                            <div>
+                                <span class="fw-semibold text-dark d-block">{{ coe.employee.full_name }}</span>
+                                <span class="small text-muted">{{ coe.employee.position.title }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="small text-muted">{{ coe.employee.department.name }}</span></td>
+                    <td>
+                        {% if coe.request_type == 'COE_WITH_COMPENSATION' %}
+                            <span class="badge bg-light text-primary border">With Compensation</span>
+                        {% else %}
+                            <span class="badge bg-light text-secondary border">Standard COE</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="small text-muted">{{ coe.created_at|date:"M d, Y" }}</span></td>
+                    <td>
+                        <span class="badge badge-status {{ coe.status_badge_class }}">
+                            {{ coe.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if coe.approved_by %}
+                            <span class="small text-dark">{{ coe.approved_by.display_name }}</span>
+                        {% else %}
+                            <span class="text-muted small">Pending Review</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex justify-content-end gap-1">
+                            <a href="{% url 'requests:coe_detail' coe.id %}" class="btn btn-sm btn-light border" title="Review Ticket">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if coe.status == 'FULFILLED' and coe.generated_document %}
+                            <a href="{% url 'requests:coe_download' coe.id %}" class="btn btn-sm btn-outline-primary" target="_blank" title="Download Issued PDF">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                        No COE requests found in this queue.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="card-hr-header justify-content-between py-3">
+        <span class="text-muted small">Showing page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+        <ul class="pagination pagination-sm mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
