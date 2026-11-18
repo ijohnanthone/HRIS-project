@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Biometric CSV | HRequest{% endblock %}
+{% block page_title %}Biometric Attendance Import{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-hr">
+            <div class="card-hr-header">
+                <h5 class="card-hr-title">
+                    <i class="bi bi-cloud-arrow-up text-primary me-2"></i>Upload Biometric Attendance File
+                </h5>
+            </div>
+            <div class="card-hr-body">
+                <div class="alert alert-info d-flex align-items-center gap-2 mb-4">
+                    <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                    <div>
+                        <strong>Biometric CSV Specifications:</strong> The CSV must contain the columns <code>employee_id</code>, <code>date</code> (YYYY-MM-DD), <code>clock_in</code> (HH:MM:SS), and <code>clock_out</code> (HH:MM:SS).
+                    </div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small text-secondary">Select Biometric CSV File *</label>
+                        {{ form.csv_file }}
+                        {% if form.csv_file.errors %}
+                        <div class="text-danger small mt-1">{{ form.csv_file.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{% url 'attendance:download_sample_csv' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-download me-1"></i> Download Sample CSV Template
+                        </a>
+
+                        <button type="submit" class="btn btn-primary fw-semibold px-4">
+                            <i class="bi bi-eye me-1"></i> Upload & Preview Batch
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

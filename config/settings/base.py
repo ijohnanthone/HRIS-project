@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'apps.organizations.apps.OrganizationsConfig',
     'apps.employees.apps.EmployeesConfig',
     'apps.documents.apps.DocumentsConfig',
+    'apps.attendance.apps.AttendanceConfig',
 ]
 
 MIDDLEWARE = [

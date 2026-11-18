@@ -50,9 +50,19 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Live organizational metrics
         from apps.employees.models import Employee
         from apps.organizations.models import Department
+        from apps.attendance.models import Attendance
+        from django.utils import timezone
+        
+        today = timezone.now().date()
         context['total_employees'] = Employee.objects.count()
         context['total_departments'] = Department.objects.count()
         context['recent_employees'] = Employee.objects.select_related('department', 'position', 'user').order_by('-created_at')[:5]
+        context['today_attendance_count'] = Attendance.objects.filter(date=today, clock_in__isnull=False).count()
+        
+        if hasattr(user, 'employee_profile'):
+            context['my_today_attendance'] = Attendance.objects.filter(employee=user.employee_profile, date=today).first()
+        else:
+            context['my_today_attendance'] = None
         return context
 
 class UserProfileView(LoginRequiredMixin, TemplateView):

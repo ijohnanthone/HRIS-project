@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}My Attendance | HRequest{% endblock %}
+{% block page_title %}My Daily Attendance{% endblock %}
+
+{% block content %}
+<!-- Clock In / Out Action Hero Widget -->
+<div class="card-hr p-4 mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-7">
+            <h4 class="fw-bold mb-1">Today's Attendance Status</h4>
+            <p class="text-muted small mb-0">
+                <i class="bi bi-calendar3 me-1"></i>{{ today|date:"l, F d, Y" }} &bull; Shift Start: <strong>08:00 AM</strong> (Grace period until 08:15 AM)
+            </p>
+            <div class="mt-3">
+                {% if today_record %}
+                    {% if today_record.clock_in and not today_record.clock_out %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-semibold">
+                            <i class="bi bi-clock-history me-1"></i>Clocked in at {{ today_record.clock_in|date:"H:i" }} &bull; Working
+                        </span>
+                    {% elif today_record.clock_in and today_record.clock_out %}
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fw-semibold">
+                            <i class="bi bi-check-circle me-1"></i>Day Complete &bull; {{ today_record.clock_in|date:"H:i" }} to {{ today_record.clock_out|date:"H:i" }} ({{ today_record.total_hours }} hrs)
+                        </span>
+                    {% endif %}
+                {% else %}
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 fw-semibold">
+                        <i class="bi bi-exclamation-circle me-1"></i>Not yet clocked in for today
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-5 text-md-end mt-3 mt-md-0">
+            <form method="post" action="{% url 'attendance:clock_in_out' %}" class="d-inline-flex gap-2">
+                {% csrf_token %}
+                {% if not today_record or not today_record.clock_in %}
+                <button type="submit" name="action" value="clock_in" class="btn btn-primary btn-lg px-4 fw-semibold shadow-sm">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Clock In
+                </button>
+                {% elif today_record and not today_record.clock_out %}
+                <button type="submit" name="action" value="clock_out" class="btn btn-danger btn-lg px-4 fw-semibold shadow-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i> Clock Out
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-secondary btn-lg px-4 fw-semibold" disabled>
+                    <i class="bi bi-check2-all me-1"></i> Completed Today
+                </button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance History Log -->
+<div class="card-hr">
+    <div class="card-hr-header justify-content-between">
+        <h5 class="card-hr-title"><i class="bi bi-clock-history text-primary me-2"></i>My Punch Log History</h5>
+    </div>
+    <div class="card-hr-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hr mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Duration</th>
+                        <th>Source</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in attendances %}
+                    <tr>
+                        <td class="fw-medium text-dark">{{ att.date|date:"l, M d, Y" }}</td>
+                        <td>
+                            {% if att.clock_in %}{{ att.clock_in|date:"H:i" }}{% else %}<span class="text-muted">--:--</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if att.clock_out %}{{ att.clock_out|date:"H:i" }}{% else %}<span class="text-muted">--:--</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if att.total_hours %}<strong>{{ att.total_hours }} hrs</strong>{% else %}--{% endif %}
+                        </td>
+                        <td>
+                            {% if att.source == 'WEB' %}
+                                <span class="badge bg-light text-primary border">Web</span>
+                            {% elif att.source == 'BIOMETRIC' %}
+                                <span class="badge bg-light text-success border">Biometric</span>
+                            {% else %}
+                                <span class="badge bg-light text-warning border">Manual</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-status {{ att.status_badge_class }}">
+                                {{ att.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No attendance logs on file yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Batch Preview #{{ batch.id }} | HRequest{% endblock %}
+{% block page_title %}Batch Preview: {{ batch.original_filename }}{% endblock %}
+
+{% block content %}
+<!-- Metric Cards for Validation Counts -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="kpi-card text-center">
+            <span class="kpi-card-label">Total Rows</span>
+            <div class="kpi-card-value text-primary">{{ batch.total_rows }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card text-center">
+            <span class="kpi-card-label">Valid Rows</span>
+            <div class="kpi-card-value text-success">{{ batch.valid_rows }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card text-center">
+            <span class="kpi-card-label">Duplicate Rows</span>
+            <div class="kpi-card-value text-warning">{{ batch.duplicate_rows }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card text-center">
+            <span class="kpi-card-label">Error Rows</span>
+            <div class="kpi-card-value text-danger">{{ batch.error_rows }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card-hr">
+    <div class="card-hr-header justify-content-between">
+        <h5 class="card-hr-title"><i class="bi bi-list-columns-reverse text-primary me-2"></i>Row-by-Row Parse Results</h5>
+        <span class="badge bg-light text-secondary border">Batch #{{ batch.id }}</span>
+    </div>
+    <div class="card-hr-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hr mb-0">
+                <thead>
+                    <tr>
+                        <th>Row #</th>
+                        <th>Employee ID</th>
+                        <th>Resolved Employee</th>
+                        <th>Date</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Status</th>
+                        <th>Notes / Validation Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rows %}
+                    <tr class="{% if r.status == 'INVALID' %}table-danger{% elif r.status == 'CONFLICT' %}table-warning{% endif %}">
+                        <td><code>#{{ r.row_number }}</code></td>
+                        <td><strong>{{ r.raw_data.employee_id }}</strong></td>
+                        <td>
+                            {% if r.resolved_employee %}
+                                <span class="fw-semibold">{{ r.resolved_employee.full_name }}</span>
+                            {% else %}
+                                <span class="text-danger small">Unresolved</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ r.resolved_date|default:"--" }}</td>
+                        <td>{{ r.resolved_clock_in|date:"H:i"|default:"--" }}</td>
+                        <td>{{ r.resolved_clock_out|date:"H:i"|default:"--" }}</td>
+                        <td>
+                            {% if r.status == 'VALID' %}
+                                <span class="badge bg-success">Valid</span>
+                            {% elif r.status == 'DUPLICATE' %}
+                                <span class="badge bg-warning text-dark">Duplicate</span>
+                            {% elif r.status == 'CONFLICT' %}
+                                <span class="badge bg-info text-dark">Reconciled</span>
+                            {% else %}
+                                <span class="badge bg-danger">Invalid</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">
+                            {% if r.error_message %}
+                                <span class="text-muted">{{ r.error_message }}</span>
+                            {% else %}
+                                <span class="text-success"><i class="bi bi-check2"></i> Ready for import</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No rows in this batch.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Confirm / Cancel Actions -->
+    <div class="card-hr-header justify-content-between py-3">
+        <form method="post" action="{% url 'attendance:import_confirm' batch.id %}">
+            {% csrf_token %}
+            <button type="submit" name="action" value="cancel" class="btn btn-outline-danger" onclick="return confirm('Cancel and discard this import batch?')">
+                <i class="bi bi-trash me-1"></i> Discard Batch
+            </button>
+        </form>
+
+        <form method="post" action="{% url 'attendance:import_confirm' batch.id %}">
+            {% csrf_token %}
+            <button type="submit" name="action" value="confirm" class="btn btn-primary fw-semibold px-4">
+                <i class="bi bi-check2-circle me-1"></i> Confirm & Apply Valid Records
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

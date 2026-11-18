@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Roster | HRequest{% endblock %}
+{% block page_title %}Attendance Monitoring{% endblock %}
+
+{% block content %}
+<div class="card-hr">
+    <!-- Filter & Actions Bar -->
+    <div class="card-hr-header flex-wrap gap-3">
+        <form method="get" class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Search -->
+            <div class="input-group" style="width: 220px;">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ current_q }}" class="form-control border-start-0 ps-0" placeholder="Search employee...">
+            </div>
+
+            <!-- Date Filter -->
+            <input type="date" name="date" value="{{ current_date }}" class="form-control" style="width: 170px;" onchange="this.form.submit()">
+
+            <!-- Department Filter -->
+            <select name="department" class="form-select" style="width: 180px;" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}" {% if current_dept == dept.id|stringformat:"s" %}selected{% endif %}>
+                    {{ dept.name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <!-- Status Filter -->
+            <select name="status" class="form-select" style="width: 150px;" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                {% for s_val, s_label in statuses %}
+                <option value="{{ s_val }}" {% if current_status == s_val %}selected{% endif %}>
+                    {{ s_label }}
+                </option>
+                {% endfor %}
+            </select>
+
+            {% if current_q or current_date or current_dept or current_status %}
+            <a href="{% url 'attendance:roster' %}" class="btn btn-light border" title="Reset Filters">
+                <i class="bi bi-x-circle"></i>
+            </a>
+            {% endif %}
+        </form>
+
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <a href="{% url 'attendance:import_upload' %}" class="btn btn-primary">
+                <i class="bi bi-cloud-arrow-up me-1"></i> Import Biometric CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="table-responsive">
+        <table class="table table-hr">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Employee</th>
+                    <th>Clock In</th>
+                    <th>Clock Out</th>
+                    <th>Total Hours</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Verified</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for att in attendances %}
+                <tr>
+                    <td class="fw-medium text-dark">{{ att.date|date:"M d, Y" }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold small flex-shrink-0"
+                                 style="width: 30px; height: 30px; background-color: var(--hr-corporate-blue); font-size: 0.75rem;">
+                                {{ att.employee.initials }}
+                            </div>
+                            <div>
+                                <span class="fw-semibold text-dark d-block">{{ att.employee.full_name }}</span>
+                                <span class="small text-muted">{{ att.employee.department.code }} &bull; {{ att.employee.employee_id_number }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if att.clock_in %}
+                            <span class="text-dark">{{ att.clock_in|date:"H:i" }}</span>
+                        {% else %}
+                            <span class="text-muted small">--:--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if att.clock_out %}
+                            <span class="text-dark">{{ att.clock_out|date:"H:i" }}</span>
+                        {% else %}
+                            <span class="text-muted small">--:--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if att.total_hours %}
+                            <span class="fw-semibold">{{ att.total_hours }} hrs</span>
+                        {% else %}
+                            <span class="text-muted small">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if att.source == 'WEB' %}
+                            <span class="badge bg-light text-primary border"><i class="bi bi-globe me-1"></i>Web</span>
+                        {% elif att.source == 'BIOMETRIC' %}
+                            <span class="badge bg-light text-success border"><i class="bi bi-fingerprint me-1"></i>Biometric</span>
+                        {% else %}
+                            <span class="badge bg-light text-warning border"><i class="bi bi-pencil-square me-1"></i>Manual</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-status {{ att.status_badge_class }}">
+                            {{ att.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if att.is_verified %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle" title="Verified by {{ att.verified_by.display_name }}">
+                                <i class="bi bi-check2-circle me-1"></i>Verified
+                            </span>
+                        {% else %}
+                            <span class="text-muted small">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editModal{{ att.id }}" title="Correct Attendance">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Manual Correction Modal for Row -->
+                <div class="modal fade" id="editModal{{ att.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form method="post" action="{% url 'attendance:manual_correction' att.id %}" class="modal-content">
+                            {% csrf_token %}
+                            <div class="modal-header">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="bi bi-pencil-square text-primary me-2"></i>Adjust Attendance
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Employee</label>
+                                    <input type="text" class="form-control" value="{{ att.employee.full_name }} ({{ att.date }})" disabled>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label small fw-semibold text-muted">Clock In Time</label>
+                                        <input type="datetime-local" name="clock_in" class="form-control" 
+                                               value="{% if att.clock_in %}{{ att.clock_in|date:'Y-m-d\TH:i' }}{% endif %}">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small fw-semibold text-muted">Clock Out Time</label>
+                                        <input type="datetime-local" name="clock_out" class="form-control" 
+                                               value="{% if att.clock_out %}{{ att.clock_out|date:'Y-m-d\TH:i' }}{% endif %}">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Status</label>
+                                    <select name="status" class="form-select">
+                                        {% for s_val, s_lbl in statuses %}
+                                        <option value="{{ s_val }}" {% if att.status == s_val %}selected{% endif %}>{{ s_lbl }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Audit Justification *</label>
+                                    <textarea name="correction_note" class="form-control" rows="3" required placeholder="Mandatory reason for audit record (e.g. system correction, employee punch fault, approved offsite)...">{{ att.correction_note }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary fw-semibold">Save Adjustment</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
+                        No attendance records found matching filters.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="card-hr-header justify-content-between py-3">
+        <span class="text-muted small">Showing page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+        <ul class="pagination pagination-sm mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
