@@ -8,7 +8,7 @@ from apps.announcements.models import Announcement, AnnouncementPriority
 class AnnouncementTests(TestCase):
     def setUp(self):
         self.hr_user = CustomUser.objects.create_user(
-            email='hr_admin@hrequest.local',
+            email='hr_admin@hrequest.com',
             password='Password123!',
             role=UserRole.HR_ADMIN
         )
@@ -17,7 +17,7 @@ class AnnouncementTests(TestCase):
         self.pos_dev = Position.objects.create(title='Software Engineer', department=self.dept_it)
 
         self.emp_user = CustomUser.objects.create_user(
-            email='employee@hrequest.local',
+            email='employee@hrequest.com',
             password='Password123!',
             role=UserRole.EMPLOYEE
         )
@@ -50,14 +50,14 @@ class AnnouncementTests(TestCase):
         )
 
     def test_hr_admin_can_view_all_announcements(self):
-        self.client.login(email='hr_admin@hrequest.local', password='Password123!')
+        self.client.login(email='hr_admin@hrequest.com', password='Password123!')
         response = self.client.get(reverse('announcements:list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'General Notice')
         self.assertContains(response, 'Sales Only Notice')
 
     def test_employee_can_only_view_applicable_announcements(self):
-        self.client.login(email='employee@hrequest.local', password='Password123!')
+        self.client.login(email='employee@hrequest.com', password='Password123!')
         response = self.client.get(reverse('announcements:list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'General Notice')
@@ -65,7 +65,7 @@ class AnnouncementTests(TestCase):
         self.assertNotContains(response, 'Sales Only Notice')
 
     def test_hr_admin_can_create_announcement(self):
-        self.client.login(email='hr_admin@hrequest.local', password='Password123!')
+        self.client.login(email='hr_admin@hrequest.com', password='Password123!')
         response = self.client.post(reverse('announcements:create'), {
             'title': 'New Urgent Policy',
             'content': 'Please review immediately.',
@@ -76,6 +76,6 @@ class AnnouncementTests(TestCase):
         self.assertTrue(Announcement.objects.filter(title='New Urgent Policy').exists())
 
     def test_employee_cannot_create_announcement(self):
-        self.client.login(email='employee@hrequest.local', password='Password123!')
+        self.client.login(email='employee@hrequest.com', password='Password123!')
         response = self.client.get(reverse('announcements:create'))
         self.assertEqual(response.status_code, 403)

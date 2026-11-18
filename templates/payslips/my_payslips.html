@@ -39,7 +39,7 @@
                         </td>
                         <td>
                             {% if p.total_salary %}
-                                <strong class="text-dark">${{ p.total_salary|floatformat:2 }}</strong>
+                                <strong class="text-dark">PHP {{ p.total_salary|floatformat:2 }}</strong>
                             {% else %}
                                 <span class="text-muted">--</span>
                             {% endif %}

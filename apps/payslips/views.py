@@ -122,9 +122,19 @@ class SecurePayslipDownloadView(LoginRequiredMixin, View):
     """
     Guarded download controller for confidential employee payslips.
     Restricts access strictly to HR Admins, Super Admins, and the owner employee.
+    If the stored file is missing or corrupted/stub, automatically generates an official
+    ReportLab payslip PDF in PHP.
     """
     def get(self, request, pk, *args, **kwargs):
-        payslip = get_object_or_404(PayslipRecord.objects.select_related('employee__user'), pk=pk)
+        payslip = get_object_or_404(
+            PayslipRecord.objects.select_related(
+                'employee__user',
+                'employee__department',
+                'employee__position',
+                'payroll_period'
+            ),
+            pk=pk
+        )
         user = request.user
 
         # 1. Authorization Guard
@@ -138,8 +148,25 @@ class SecurePayslipDownloadView(LoginRequiredMixin, View):
         else:
             raise PermissionDenied("Unauthorized payslip access.")
 
-        if not payslip.payslip_file or not payslip.payslip_file.storage.exists(payslip.payslip_file.name):
-            raise Http404("Payslip PDF document not found in private vault.")
+        # Check if physical file exists and is a valid PDF (> 200 bytes)
+        file_valid = False
+        if payslip.payslip_file:
+            try:
+                if payslip.payslip_file.storage.exists(payslip.payslip_file.name):
+                    if payslip.payslip_file.size > 200:
+                        file_valid = True
+            except Exception:
+                file_valid = False
+
+        if not file_valid:
+            from apps.payslips.services.payslip_pdf_generator import generate_payslip_pdf
+            from django.core.files.base import ContentFile
+            pdf_bytes = generate_payslip_pdf(payslip)
+            period_str = payslip.payroll_period.label.replace(' ', '_')
+            filename = f"Payslip_{payslip.employee.employee_id_number}_{period_str}.pdf"
+            payslip.payslip_file.save(filename, ContentFile(pdf_bytes), save=False)
+            payslip.file_size = len(pdf_bytes)
+            payslip.save(update_fields=['payslip_file', 'file_size'])
 
         content_type, _ = mimetypes.guess_type(payslip.payslip_file.name)
         response = FileResponse(payslip.payslip_file.open('rb'), content_type=content_type or 'application/pdf')

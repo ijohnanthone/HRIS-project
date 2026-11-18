@@ -79,7 +79,7 @@ class Command(BaseCommand):
 
         # 3. Core Accounts -> Employee Links
         # Kurt Bates (Super Admin)
-        admin_user = CustomUser.objects.get(email='admin@hrequest.local')
+        admin_user = CustomUser.objects.get(email='admin@hrequest.com')
         kurt, _ = Employee.objects.get_or_create(
             user=admin_user,
             defaults={
@@ -100,7 +100,7 @@ class Command(BaseCommand):
         exec_dept.save()
 
         # Paula Mora (HR Admin - matching UI Reference)
-        hr_user = CustomUser.objects.get(email='hr@hrequest.local')
+        hr_user = CustomUser.objects.get(email='hr@hrequest.com')
         paula, _ = Employee.objects.get_or_create(
             user=hr_user,
             defaults={
@@ -121,7 +121,7 @@ class Command(BaseCommand):
         hr_dept.save()
 
         # Alex Buckmaster (HR Staff)
-        staff_user = CustomUser.objects.get(email='staff@hrequest.local')
+        staff_user = CustomUser.objects.get(email='staff@hrequest.com')
         Employee.objects.get_or_create(
             user=staff_user,
             defaults={
@@ -140,7 +140,7 @@ class Command(BaseCommand):
         )
 
         # Chris Glasser (Employee - Java Developer, matching UI reference onboarding screen)
-        emp_user = CustomUser.objects.get(email='employee@hrequest.local')
+        emp_user = CustomUser.objects.get(email='employee@hrequest.com')
         Employee.objects.get_or_create(
             user=emp_user,
             defaults={
@@ -161,7 +161,7 @@ class Command(BaseCommand):
         # 4. Additional Sample Employees (Directly from reference table screen 2)
         additional_samples = [
             {
-                'email': 'kathy.pacheco@hrequest.local',
+                'email': 'kathy.pacheco@hrequest.com',
                 'id_num': '00236',
                 'first_name': 'Kathy',
                 'last_name': 'Pacheco',
@@ -174,7 +174,7 @@ class Command(BaseCommand):
                 'hire': datetime.date(2023, 1, 10),
             },
             {
-                'email': 'frances.swann@hrequest.local',
+                'email': 'frances.swann@hrequest.com',
                 'id_num': '00235',
                 'first_name': 'Frances',
                 'last_name': 'Swann',
@@ -187,7 +187,7 @@ class Command(BaseCommand):
                 'hire': datetime.date(2024, 2, 1),
             },
             {
-                'email': 'eddie.lake@hrequest.local',
+                'email': 'eddie.lake@hrequest.com',
                 'id_num': '00234',
                 'first_name': 'Eddie',
                 'last_name': 'Lake',
@@ -200,7 +200,7 @@ class Command(BaseCommand):
                 'hire': datetime.date(2024, 4, 15),
             },
             {
-                'email': 'judith.rodriguez@hrequest.local',
+                'email': 'judith.rodriguez@hrequest.com',
                 'id_num': '00233',
                 'first_name': 'Judith',
                 'last_name': 'Rodriguez',
@@ -213,7 +213,7 @@ class Command(BaseCommand):
                 'hire': datetime.date(2022, 8, 20),
             },
             {
-                'email': 'john.dukes@hrequest.local',
+                'email': 'john.dukes@hrequest.com',
                 'id_num': '00232',
                 'first_name': 'John',
                 'last_name': 'Dukes',
@@ -226,7 +226,7 @@ class Command(BaseCommand):
                 'hire': datetime.date(2023, 3, 5),
             },
             {
-                'email': 'autumn.phillips@hrequest.local',
+                'email': 'autumn.phillips@hrequest.com',
                 'id_num': '00231',
                 'first_name': 'Autumn',
                 'last_name': 'Phillips',
@@ -351,6 +351,9 @@ class Command(BaseCommand):
             defaults={'label': 'November 2026', 'is_active': True}
         )
 
+        from apps.payslips.services.payslip_pdf_generator import generate_payslip_pdf
+        from django.core.files.base import ContentFile
+
         sample_payslips_data = [
             ('00236', 23789.00, PayslipStatus.PAID),
             ('00230', 16436.00, PayslipStatus.PAID),
@@ -361,18 +364,29 @@ class Command(BaseCommand):
         for emp_id_str, amount, st in sample_payslips_data:
             target_emp = Employee.objects.filter(employee_id_number=emp_id_str).first()
             if target_emp:
-                PayslipRecord.objects.get_or_create(
+                rec, _ = PayslipRecord.objects.get_or_create(
                     employee=target_emp,
                     payroll_period=period_nov,
                     defaults={
-                        'payslip_file': 'payslips/sample_payslip.pdf',
-                        'file_size': 2048,
                         'total_salary': amount,
                         'status': st,
                         'uploaded_by': hr_user,
                         'is_released': True,
                     }
                 )
+                rec.total_salary = amount
+                rec.status = st
+                rec.is_released = True
+                
+                # Generate valid ReportLab PDF in PHP
+                pdf_bytes = generate_payslip_pdf(rec)
+                rec.payslip_file.save(
+                    f"Payslip_{target_emp.employee_id_number}_November_2026.pdf",
+                    ContentFile(pdf_bytes),
+                    save=False
+                )
+                rec.file_size = len(pdf_bytes)
+                rec.save()
 
         # Seed Announcements
         from apps.announcements.models import Announcement, AnnouncementPriority

@@ -96,7 +96,7 @@
                     </td>
                     <td>
                         {% if p.total_salary %}
-                            <strong class="text-dark">${{ p.total_salary|floatformat:2 }}</strong>
+                            <strong class="text-dark">PHP {{ p.total_salary|floatformat:2 }}</strong>
                         {% else %}
                             <span class="text-muted small">--</span>
                         {% endif %}
@@ -163,7 +163,7 @@
                 </div>
                 <div class="row mb-3">
                     <div class="col-6">
-                        <label class="form-label small fw-semibold text-secondary">Net Disbursed Amount ($)</label>
+                        <label class="form-label small fw-semibold text-secondary">Net Disbursed Amount (PHP)</label>
                         {{ upload_form.total_salary }}
                     </div>
                     <div class="col-6">

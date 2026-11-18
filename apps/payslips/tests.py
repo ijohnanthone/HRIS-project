@@ -14,14 +14,14 @@ class PayslipManagementTests(TestCase):
         self.pos = Position.objects.create(title='Accountant', code='POS-ACC', department=self.dept)
 
         self.hr_user = CustomUser.objects.create_user(
-            email='hr_admin@hrequest.local',
+            email='hr_admin@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.HR_ADMIN,
             is_staff=True
         )
 
         self.emp_user1 = CustomUser.objects.create_user(
-            email='emp1@hrequest.local',
+            email='emp1@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.EMPLOYEE
         )
@@ -36,7 +36,7 @@ class PayslipManagementTests(TestCase):
         )
 
         self.emp_user2 = CustomUser.objects.create_user(
-            email='emp2@hrequest.local',
+            email='emp2@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.EMPLOYEE
         )
@@ -122,24 +122,24 @@ class PayslipManagementTests(TestCase):
 
         # 1. Owner employee can download
         client1 = Client()
-        client1.login(email='emp1@hrequest.local', password='TestPassword2026!')
+        client1.login(email='emp1@hrequest.com', password='TestPassword2026!')
         res1 = client1.get(reverse('payslips:download', kwargs={'pk': record.id}))
         self.assertEqual(res1.status_code, 200)
 
         # 2. Another employee CANNOT download -> 403 Forbidden
         client2 = Client()
-        client2.login(email='emp2@hrequest.local', password='TestPassword2026!')
+        client2.login(email='emp2@hrequest.com', password='TestPassword2026!')
         res2 = client2.get(reverse('payslips:download', kwargs={'pk': record.id}))
         self.assertEqual(res2.status_code, 403)
 
         # 3. HR Admin can download
         hr_client = Client()
-        hr_client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        hr_client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
         res3 = hr_client.get(reverse('payslips:download', kwargs={'pk': record.id}))
         self.assertEqual(res3.status_code, 200)
 
     def test_employee_cannot_access_master_payroll_table(self):
         client = Client()
-        client.login(email='emp1@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp1@hrequest.com', password='TestPassword2026!')
         res = client.get(reverse('payslips:master_list'))
         self.assertEqual(res.status_code, 403)

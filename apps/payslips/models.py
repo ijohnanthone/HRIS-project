@@ -53,7 +53,7 @@ class PayslipRecord(models.Model):
         decimal_places=2,
         null=True,
         blank=True,
-        help_text=_('Net disbursed salary amount in USD ($)')
+        help_text=_('Net disbursed salary amount in PHP')
     )
     status = models.CharField(
         _('payment status'),

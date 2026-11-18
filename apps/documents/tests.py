@@ -14,14 +14,14 @@ class DocumentVaultSecurityTests(TestCase):
         self.pos = Position.objects.create(title='Developer', code='POS-DEV', department=self.dept)
 
         self.hr_admin = CustomUser.objects.create_user(
-            email='hr_admin@hrequest.local',
+            email='hr_admin@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.HR_ADMIN,
             is_staff=True
         )
 
         self.employee_user1 = CustomUser.objects.create_user(
-            email='emp1@hrequest.local',
+            email='emp1@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.EMPLOYEE
         )
@@ -36,7 +36,7 @@ class DocumentVaultSecurityTests(TestCase):
         )
 
         self.employee_user2 = CustomUser.objects.create_user(
-            email='emp2@hrequest.local',
+            email='emp2@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.EMPLOYEE
         )
@@ -72,7 +72,7 @@ class DocumentVaultSecurityTests(TestCase):
 
     def test_hr_admin_can_download_confidential_and_standard_docs(self):
         client = Client()
-        client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
 
         # Download standard doc
         res1 = client.get(reverse('documents:secure_download', kwargs={'pk': self.public_doc.id}))
@@ -84,20 +84,20 @@ class DocumentVaultSecurityTests(TestCase):
 
     def test_employee_can_download_own_standard_doc(self):
         client = Client()
-        client.login(email='emp1@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp1@hrequest.com', password='TestPassword2026!')
         res = client.get(reverse('documents:secure_download', kwargs={'pk': self.public_doc.id}))
         self.assertEqual(res.status_code, 200)
 
     def test_employee_cannot_download_own_confidential_doc(self):
         client = Client()
-        client.login(email='emp1@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp1@hrequest.com', password='TestPassword2026!')
         res = client.get(reverse('documents:secure_download', kwargs={'pk': self.confidential_doc.id}))
         # Confidental docs are restricted from employee self-download
         self.assertEqual(res.status_code, 403)
 
     def test_employee_cannot_download_other_employee_doc(self):
         client = Client()
-        client.login(email='emp2@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp2@hrequest.com', password='TestPassword2026!')
         res = client.get(reverse('documents:secure_download', kwargs={'pk': self.public_doc.id}))
         # Emp2 cannot access Emp1's documents
         self.assertEqual(res.status_code, 403)

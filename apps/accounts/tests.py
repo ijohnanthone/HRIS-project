@@ -9,10 +9,10 @@ User = get_user_model()
 class CustomUserModelTests(TestCase):
     def test_create_regular_user(self):
         user = User.objects.create_user(
-            email='testuser@hrequest.local',
+            email='testuser@hrequest.com',
             password='Password123!'
         )
-        self.assertEqual(user.email, 'testuser@hrequest.local')
+        self.assertEqual(user.email, 'testuser@hrequest.com')
         self.assertEqual(user.role, UserRole.EMPLOYEE)
         self.assertTrue(user.is_active)
         self.assertFalse(user.is_staff)
@@ -22,7 +22,7 @@ class CustomUserModelTests(TestCase):
 
     def test_create_superuser(self):
         admin = User.objects.create_superuser(
-            email='superadmin@hrequest.local',
+            email='superadmin@hrequest.com',
             password='AdminPassword123!'
         )
         self.assertEqual(admin.role, UserRole.SUPER_ADMIN)
@@ -32,16 +32,16 @@ class CustomUserModelTests(TestCase):
 
     def test_email_normalization(self):
         user = User.objects.create_user(
-            email='MixedCase@HREQUEST.Local',
+            email='MixedCase@hrequest.com',
             password='Password123!'
         )
-        self.assertEqual(user.email, 'mixedcase@hrequest.local')
+        self.assertEqual(user.email, 'mixedcase@hrequest.com')
 
 class AuthenticationViewsTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(
-            email='employee@hrequest.local',
+            email='employee@hrequest.com',
             password='TestPassword2026!'
         )
 
@@ -53,7 +53,7 @@ class AuthenticationViewsTests(TestCase):
 
     def test_login_successful(self):
         response = self.client.post(reverse('accounts:login'), {
-            'email': 'employee@hrequest.local',
+            'email': 'employee@hrequest.com',
             'password': 'TestPassword2026!',
             'remember_me': True
         })
@@ -61,7 +61,7 @@ class AuthenticationViewsTests(TestCase):
 
     def test_login_case_insensitive(self):
         response = self.client.post(reverse('accounts:login'), {
-            'email': 'EMPLOYEE@HREQUEST.LOCAL',
+            'email': 'EMPLOYEE@hrequest.com',
             'password': 'TestPassword2026!',
             'remember_me': True
         })
@@ -69,7 +69,7 @@ class AuthenticationViewsTests(TestCase):
 
     def test_login_invalid_password(self):
         response = self.client.post(reverse('accounts:login'), {
-            'email': 'employee@hrequest.local',
+            'email': 'employee@hrequest.com',
             'password': 'WrongPassword!',
         })
         self.assertEqual(response.status_code, 200)
@@ -81,7 +81,7 @@ class AuthenticationViewsTests(TestCase):
         self.assertTrue(response.url.startswith(reverse('accounts:login')))
 
     def test_dashboard_authenticated(self):
-        self.client.login(email='employee@hrequest.local', password='TestPassword2026!')
+        self.client.login(email='employee@hrequest.com', password='TestPassword2026!')
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Welcome back')
@@ -89,11 +89,11 @@ class AuthenticationViewsTests(TestCase):
 
     def test_hr_admin_dashboard_routing(self):
         hr_admin = User.objects.create_user(
-            email='hr_test@hrequest.local',
+            email='hr_test@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.HR_ADMIN
         )
-        self.client.login(email='hr_test@hrequest.local', password='TestPassword2026!')
+        self.client.login(email='hr_test@hrequest.com', password='TestPassword2026!')
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'dashboard/hr_admin.html')
@@ -101,10 +101,10 @@ class AuthenticationViewsTests(TestCase):
 
     def test_super_admin_dashboard_routing(self):
         super_admin = User.objects.create_superuser(
-            email='admin_test@hrequest.local',
+            email='admin_test@hrequest.com',
             password='TestPassword2026!'
         )
-        self.client.login(email='admin_test@hrequest.local', password='TestPassword2026!')
+        self.client.login(email='admin_test@hrequest.com', password='TestPassword2026!')
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'dashboard/super_admin.html')
@@ -112,17 +112,17 @@ class AuthenticationViewsTests(TestCase):
 
     def test_hr_staff_dashboard_routing(self):
         hr_staff = User.objects.create_user(
-            email='staff_test@hrequest.local',
+            email='staff_test@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.HR_STAFF
         )
-        self.client.login(email='staff_test@hrequest.local', password='TestPassword2026!')
+        self.client.login(email='staff_test@hrequest.com', password='TestPassword2026!')
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'dashboard/hr_staff.html')
         self.assertContains(response, 'HR STAFF OPERATIONS')
 
     def test_logout_redirects_to_login(self):
-        self.client.login(email='employee@hrequest.local', password='TestPassword2026!')
+        self.client.login(email='employee@hrequest.com', password='TestPassword2026!')
         response = self.client.get(reverse('accounts:logout'))
         self.assertRedirects(response, reverse('accounts:login'))

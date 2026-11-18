@@ -8,28 +8,28 @@ class Command(BaseCommand):
         password = 'HRequest2026!'
         demo_accounts = [
             {
-                'email': 'admin@hrequest.local',
+                'email': 'admin@hrequest.com',
                 'role': UserRole.SUPER_ADMIN,
                 'is_staff': True,
                 'is_superuser': True,
                 'label': 'Super Admin'
             },
             {
-                'email': 'hr@hrequest.local',
+                'email': 'hr@hrequest.com',
                 'role': UserRole.HR_ADMIN,
                 'is_staff': True,
                 'is_superuser': False,
                 'label': 'HR Admin'
             },
             {
-                'email': 'staff@hrequest.local',
+                'email': 'staff@hrequest.com',
                 'role': UserRole.HR_STAFF,
                 'is_staff': True,
                 'is_superuser': False,
                 'label': 'HR Staff'
             },
             {
-                'email': 'employee@hrequest.local',
+                'email': 'employee@hrequest.com',
                 'role': UserRole.EMPLOYEE,
                 'is_staff': False,
                 'is_superuser': False,

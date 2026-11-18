@@ -13,7 +13,7 @@ class EmployeeModelAndViewsTests(TestCase):
 
         # HR Admin user
         self.hr_user = CustomUser.objects.create_user(
-            email='hr_admin@hrequest.local',
+            email='hr_admin@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.HR_ADMIN,
             is_staff=True
@@ -21,7 +21,7 @@ class EmployeeModelAndViewsTests(TestCase):
 
         # Regular employee user
         self.emp_user = CustomUser.objects.create_user(
-            email='regular_emp@hrequest.local',
+            email='regular_emp@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.EMPLOYEE
         )
@@ -47,7 +47,7 @@ class EmployeeModelAndViewsTests(TestCase):
         self.assertEqual(self.employee.status_badge_class, 'badge-status-active')
 
     def test_unique_employee_id_number(self):
-        other_user = CustomUser.objects.create_user(email='other@hrequest.local', password='Pwd!')
+        other_user = CustomUser.objects.create_user(email='other@hrequest.com', password='Pwd!')
         with self.assertRaises(IntegrityError):
             Employee.objects.create(
                 user=other_user,
@@ -61,7 +61,7 @@ class EmployeeModelAndViewsTests(TestCase):
 
     def test_employee_list_view_as_hr_admin(self):
         client = Client()
-        client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
         response = client.get(reverse('employees:list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'John Doe')
@@ -69,14 +69,14 @@ class EmployeeModelAndViewsTests(TestCase):
 
     def test_employee_list_view_denied_for_regular_employee(self):
         client = Client()
-        client.login(email='regular_emp@hrequest.local', password='TestPassword2026!')
+        client.login(email='regular_emp@hrequest.com', password='TestPassword2026!')
         response = client.get(reverse('employees:list'))
         # Regular employee has role EMPLOYEE, allowed_roles = ['SUPER_ADMIN', 'HR_ADMIN', 'HR_STAFF']
         self.assertEqual(response.status_code, 403)
 
     def test_employee_export_csv_as_hr_admin(self):
         client = Client()
-        client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
         response = client.get(reverse('employees:export_csv'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'text/csv')
@@ -85,13 +85,13 @@ class EmployeeModelAndViewsTests(TestCase):
 
     def test_onboarding_wizard_access_denied_for_employee(self):
         client = Client()
-        client.login(email='regular_emp@hrequest.local', password='TestPassword2026!')
+        client.login(email='regular_emp@hrequest.com', password='TestPassword2026!')
         response = client.get(reverse('employees:onboard_start'))
         self.assertEqual(response.status_code, 403)
 
     def test_onboarding_wizard_full_flow(self):
         client = Client()
-        client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
 
         # Step 1
         res1 = client.post(reverse('employees:onboard_step', kwargs={'step': 1}), {
@@ -113,7 +113,7 @@ class EmployeeModelAndViewsTests(TestCase):
 
         # Step 3
         res3 = client.post(reverse('employees:onboard_step', kwargs={'step': 3}), {
-            'work_email': 'sarah.connor@hrequest.local',
+            'work_email': 'sarah.connor@hrequest.com',
             'password': 'TempPassword2026!',
             'role': UserRole.EMPLOYEE,
         })
@@ -132,7 +132,7 @@ class EmployeeModelAndViewsTests(TestCase):
         new_emp = Employee.objects.filter(employee_id_number='EMP-099').first()
         self.assertIsNotNone(new_emp)
         self.assertEqual(new_emp.full_name, 'Sarah Connor')
-        self.assertEqual(new_emp.user.email, 'sarah.connor@hrequest.local')
+        self.assertEqual(new_emp.user.email, 'sarah.connor@hrequest.com')
         self.assertTrue(new_emp.user.check_password('TempPassword2026!'))
         self.assertRedirects(res5, reverse('employees:detail', kwargs={'pk': new_emp.id}))
 

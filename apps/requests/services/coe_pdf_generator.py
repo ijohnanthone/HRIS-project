@@ -94,7 +94,7 @@ def generate_coe_pdf(coe_request, template=None):
 
     company_text = [
         Paragraph("<b>HREQUEST HRIS CORPORATION</b>", company_title_style),
-        Paragraph("Human Resources Operations & People Management Department<br/>100 Corporate Plaza, Suite 400 &bull; www.hrequest.local", company_sub_style)
+        Paragraph("Human Resources Operations & People Management Department<br/>100 Corporate Plaza, Suite 400 &bull; www.hrequest.com", company_sub_style)
     ]
 
     header_table = Table([[logo_cell, company_text]], colWidths=[65, 435])

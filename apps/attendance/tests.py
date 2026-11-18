@@ -21,14 +21,14 @@ class AttendanceEngineTests(TestCase):
         self.pos = Position.objects.create(title='Operator', code='POS-OP', department=self.dept)
 
         self.hr_user = CustomUser.objects.create_user(
-            email='hr_admin@hrequest.local',
+            email='hr_admin@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.HR_ADMIN,
             is_staff=True
         )
 
         self.emp_user = CustomUser.objects.create_user(
-            email='emp@hrequest.local',
+            email='emp@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.EMPLOYEE
         )
@@ -44,7 +44,7 @@ class AttendanceEngineTests(TestCase):
 
     def test_web_clock_in_success(self):
         client = Client()
-        client.login(email='emp@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp@hrequest.com', password='TestPassword2026!')
 
         response = client.post(reverse('attendance:clock_in_out'), {'action': 'clock_in'})
         self.assertEqual(response.status_code, 302)
@@ -56,7 +56,7 @@ class AttendanceEngineTests(TestCase):
 
     def test_web_clock_in_prevent_duplicate(self):
         client = Client()
-        client.login(email='emp@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp@hrequest.com', password='TestPassword2026!')
 
         # First punch in
         client.post(reverse('attendance:clock_in_out'), {'action': 'clock_in'})
@@ -72,7 +72,7 @@ class AttendanceEngineTests(TestCase):
 
     def test_web_clock_out_without_clock_in_fails(self):
         client = Client()
-        client.login(email='emp@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp@hrequest.com', password='TestPassword2026!')
 
         response = client.post(reverse('attendance:clock_in_out'), {'action': 'clock_out'})
         self.assertEqual(response.status_code, 302)
@@ -82,7 +82,7 @@ class AttendanceEngineTests(TestCase):
 
     def test_web_clock_in_and_out_sequence(self):
         client = Client()
-        client.login(email='emp@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp@hrequest.com', password='TestPassword2026!')
 
         client.post(reverse('attendance:clock_in_out'), {'action': 'clock_in'})
         client.post(reverse('attendance:clock_in_out'), {'action': 'clock_out'})
@@ -100,7 +100,7 @@ class AttendanceEngineTests(TestCase):
         )
 
         client = Client()
-        client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
 
         response = client.post(reverse('attendance:manual_correction', kwargs={'pk': att.id}), {
             'clock_in': '2026-11-01T08:00',
@@ -124,7 +124,7 @@ class AttendanceEngineTests(TestCase):
         csv_file = SimpleUploadedFile("biometric.csv", csv_data.encode('utf-8'), content_type="text/csv")
 
         client = Client()
-        client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
 
         # 1. Upload
         upload_res = client.post(reverse('attendance:import_upload'), {'csv_file': csv_file})
@@ -149,7 +149,7 @@ class AttendanceEngineTests(TestCase):
 
     def test_employee_cannot_access_roster_or_import(self):
         client = Client()
-        client.login(email='emp@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp@hrequest.com', password='TestPassword2026!')
 
         res1 = client.get(reverse('attendance:roster'))
         self.assertEqual(res1.status_code, 403)

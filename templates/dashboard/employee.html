@@ -103,7 +103,7 @@
                     <div>
                         <div class="fw-bold fs-5 text-dark">{{ latest_payslip.payroll_period.label }}</div>
                         <div class="text-muted small">
-                            Net Salary: ${{ latest_payslip.total_salary|default:"--" }} &bull; Disbursed
+                            Net Salary: <strong>PHP {{ latest_payslip.total_salary|floatformat:2|default:"--" }}</strong> &bull; Disbursed
                         </div>
                     </div>
                     <span class="badge badge-status badge-status-approved fs-6 px-3 py-2">Released</span>

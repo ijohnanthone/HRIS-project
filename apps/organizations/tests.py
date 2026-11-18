@@ -34,11 +34,11 @@ class OrganizationModelTests(TestCase):
 
     def test_company_structure_view_authenticated(self):
         user = CustomUser.objects.create_user(
-            email='test@hrequest.local',
+            email='test@hrequest.com',
             password='TestPassword2026!'
         )
         client = Client()
-        client.login(email='test@hrequest.local', password='TestPassword2026!')
+        client.login(email='test@hrequest.com', password='TestPassword2026!')
         response = client.get(reverse('organizations:company_structure'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Company Structure')

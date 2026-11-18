@@ -20,14 +20,14 @@ class COERequestWorkflowTests(TestCase):
         self.pos = Position.objects.create(title='Legal Counsel', code='POS-LGL', department=self.dept)
 
         self.hr_user = CustomUser.objects.create_user(
-            email='hr_admin@hrequest.local',
+            email='hr_admin@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.HR_ADMIN,
             is_staff=True
         )
 
         self.emp_user1 = CustomUser.objects.create_user(
-            email='emp1@hrequest.local',
+            email='emp1@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.EMPLOYEE
         )
@@ -42,7 +42,7 @@ class COERequestWorkflowTests(TestCase):
         )
 
         self.emp_user2 = CustomUser.objects.create_user(
-            email='emp2@hrequest.local',
+            email='emp2@hrequest.com',
             password='TestPassword2026!',
             role=UserRole.EMPLOYEE
         )
@@ -66,7 +66,7 @@ class COERequestWorkflowTests(TestCase):
 
     def test_employee_submit_coe_request(self):
         client = Client()
-        client.login(email='emp1@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp1@hrequest.com', password='TestPassword2026!')
 
         response = client.post(reverse('requests:coe_create'), {
             'request_type': RequestType.COE_WITHOUT_COMPENSATION,
@@ -91,7 +91,7 @@ class COERequestWorkflowTests(TestCase):
         )
 
         client = Client()
-        client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
 
         response = client.post(reverse('requests:coe_decision', kwargs={'pk': ticket.id}), {
             'decision': 'APPROVE_AUTO'
@@ -115,7 +115,7 @@ class COERequestWorkflowTests(TestCase):
         )
 
         client = Client()
-        client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
 
         response = client.post(reverse('requests:coe_decision', kwargs={'pk': ticket.id}), {
             'decision': 'REJECT',
@@ -137,7 +137,7 @@ class COERequestWorkflowTests(TestCase):
         )
 
         client = Client()
-        client.login(email='emp1@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp1@hrequest.com', password='TestPassword2026!')
 
         # 1. Attempt download before approval -> Denied
         res1 = client.get(reverse('requests:coe_download', kwargs={'pk': ticket.id}))
@@ -145,7 +145,7 @@ class COERequestWorkflowTests(TestCase):
 
         # 2. HR approves and generates PDF
         hr_client = Client()
-        hr_client.login(email='hr_admin@hrequest.local', password='TestPassword2026!')
+        hr_client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
         hr_client.post(reverse('requests:coe_decision', kwargs={'pk': ticket.id}), {
             'decision': 'APPROVE_AUTO'
         })
@@ -157,12 +157,12 @@ class COERequestWorkflowTests(TestCase):
 
         # 4. Another employee CANNOT download this certificate
         client2 = Client()
-        client2.login(email='emp2@hrequest.local', password='TestPassword2026!')
+        client2.login(email='emp2@hrequest.com', password='TestPassword2026!')
         res3 = client2.get(reverse('requests:coe_download', kwargs={'pk': ticket.id}))
         self.assertEqual(res3.status_code, 403)
 
     def test_employee_cannot_access_hr_coe_queue(self):
         client = Client()
-        client.login(email='emp1@hrequest.local', password='TestPassword2026!')
+        client.login(email='emp1@hrequest.com', password='TestPassword2026!')
         response = client.get(reverse('requests:coe_list'))
         self.assertEqual(response.status_code, 403)
