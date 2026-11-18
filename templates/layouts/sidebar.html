@@ -83,20 +83,20 @@
         </li>
 
         {% if is_super_admin or is_hr_admin %}
-        <li class="nav-category">Analytics & Logs</li>
+        <li class="nav-category">Analytics & Governance</li>
         <li class="sidebar-nav-item">
-            <a href="#" class="sidebar-nav-link">
+            <a href="{% url 'reports:dashboard' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'reports' %}active{% endif %}">
                 <i class="bi bi-graph-up-arrow"></i>
-                <span>Reports</span>
+                <span>Reports & Analytics</span>
             </a>
         </li>
         {% endif %}
 
         {% if is_super_admin %}
         <li class="sidebar-nav-item">
-            <a href="{% url 'admin:index' %}" class="sidebar-nav-link" target="_blank">
+            <a href="{% url 'system_admin:portal' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'system_admin' %}active{% endif %}">
                 <i class="bi bi-shield-lock"></i>
-                <span>System Admin</span>
+                <span>System Administration</span>
             </a>
         </li>
         {% endif %}

@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    RequestIndexView,
     COERequestListView,
     MyCOERequestsView,
     COERequestCreateView,
@@ -12,6 +13,7 @@ from .views import (
 app_name = 'requests'
 
 urlpatterns = [
+    path('', RequestIndexView.as_view(), name='index'),
     path('coe/', COERequestListView.as_view(), name='coe_list'),
     path('coe/my/', MyCOERequestsView.as_view(), name='my_requests'),
     path('coe/create/', COERequestCreateView.as_view(), name='coe_create'),

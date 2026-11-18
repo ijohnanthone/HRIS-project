@@ -13,6 +13,17 @@ from apps.organizations.models import Department
 from .models import PayslipRecord, PayrollPeriod, PayslipStatus
 from .forms import PayslipUploadForm, PayrollPeriodForm
 
+class PayslipIndexView(LoginRequiredMixin, View):
+    """
+    Intelligent routing for /payslips/:
+    Redirects HR team to master payroll list, and employees to their personal payslips.
+    """
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if user.is_superuser or user.role in ['SUPER_ADMIN', 'HR_ADMIN', 'HR_STAFF']:
+            return redirect('payslips:master_list')
+        return redirect('payslips:my_payslips')
+
 class MasterPayslipListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     """
     Master payroll disbursement roster matching UI Reference Screen 5.

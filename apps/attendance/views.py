@@ -105,6 +105,17 @@ class WebClockInOutView(LoginRequiredMixin, View):
 
         return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
+class AttendanceIndexView(LoginRequiredMixin, View):
+    """
+    Intelligent routing for /attendance/:
+    Redirects HR team to master attendance roster, and employees to personal attendance.
+    """
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if user.is_superuser or user.role in ['SUPER_ADMIN', 'HR_ADMIN', 'HR_STAFF']:
+            return redirect('attendance:roster')
+        return redirect('attendance:my_attendance')
+
 class AttendanceRosterView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     """
     Master attendance roster for HR team.

@@ -25,6 +25,17 @@ from .forms import (
 )
 from .services.coe_pdf_generator import generate_coe_pdf
 
+class RequestIndexView(LoginRequiredMixin, View):
+    """
+    Intelligent routing entrypoint for /requests/:
+    Redirects HR team to master COE queue and employees to their personal request history.
+    """
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if user.is_superuser or user.role in ['SUPER_ADMIN', 'HR_ADMIN', 'HR_STAFF']:
+            return redirect('requests:coe_list')
+        return redirect('requests:my_requests')
+
 class COERequestListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     """
     Master queue for HR personnel to review, approve, and fulfill COE requests.

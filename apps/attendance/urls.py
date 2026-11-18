@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    AttendanceIndexView,
     WebClockInOutView,
     AttendanceRosterView,
     MyAttendanceView,
@@ -13,7 +14,8 @@ from .views import (
 app_name = 'attendance'
 
 urlpatterns = [
-    path('', AttendanceRosterView.as_view(), name='roster'),
+    path('', AttendanceIndexView.as_view(), name='index'),
+    path('roster/', AttendanceRosterView.as_view(), name='roster'),
     path('clock/', WebClockInOutView.as_view(), name='clock_in_out'),
     path('my/', MyAttendanceView.as_view(), name='my_attendance'),
     path('correct/<int:pk>/', ManualAttendanceCorrectionView.as_view(), name='manual_correction'),

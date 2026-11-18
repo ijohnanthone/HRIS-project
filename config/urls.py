@@ -16,6 +16,8 @@ urlpatterns = [
     path('payslips/', include('apps.payslips.urls', namespace='payslips')),
     path('announcements/', include('apps.announcements.urls', namespace='announcements')),
     path('core/', include('apps.core.urls', namespace='core')),
+    path('reports/', include('apps.core.urls_reports', namespace='reports')),
+    path('system-admin/', include('apps.core.urls_admin', namespace='system_admin')),
 ]
 
 if settings.DEBUG:
