@@ -42,8 +42,13 @@
         </form>
 
         <div class="d-flex align-items-center gap-2 ms-auto">
+            {% if is_hr_team %}
+            <a href="{% url 'employees:onboard_start' %}" class="btn btn-primary">
+                <i class="bi bi-person-plus me-1"></i> Add Employee
+            </a>
+            {% endif %}
             {% if is_super_admin or is_hr_admin %}
-            <a href="{% url 'employees:export_csv' %}" class="btn btn-primary">
+            <a href="{% url 'employees:export_csv' %}" class="btn btn-light border text-secondary">
                 <i class="bi bi-file-earmark-arrow-down me-1"></i> Export
             </a>
             {% endif %}

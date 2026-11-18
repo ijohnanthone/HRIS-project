@@ -281,7 +281,36 @@ class Command(BaseCommand):
             it_dept.head_of_department = judith
             it_dept.save()
 
+        # Seed sample documents for Chris Glasser
+        from apps.documents.models import EmployeeDocument, DocumentCategory
+        chris = Employee.objects.filter(employee_id_number='00230').first()
+        if chris:
+            EmployeeDocument.objects.get_or_create(
+                employee=chris,
+                title='Signed Employment Contract 2023',
+                defaults={
+                    'category': DocumentCategory.CONTRACT,
+                    'file': 'documents/sample_contract.pdf',
+                    'file_size': 1024,
+                    'mime_type': 'application/pdf',
+                    'is_confidential': True,
+                    'uploaded_by': hr_user,
+                }
+            )
+            EmployeeDocument.objects.get_or_create(
+                employee=chris,
+                title='Primary Government ID Copy',
+                defaults={
+                    'category': DocumentCategory.GOVERNMENT_ID,
+                    'file': 'documents/sample_contract.pdf',
+                    'file_size': 2048,
+                    'mime_type': 'application/pdf',
+                    'is_confidential': False,
+                    'uploaded_by': hr_user,
+                }
+            )
+
         self.stdout.write(self.style.SUCCESS(
             f"Successfully seeded {Department.objects.count()} departments, "
-            f"{Position.objects.count()} positions, and {Employee.objects.count()} employee records!"
+            f"{Position.objects.count()} positions, {Employee.objects.count()} employee records, and sample documents!"
         ))

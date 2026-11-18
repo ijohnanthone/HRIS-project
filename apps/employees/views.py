@@ -1,12 +1,23 @@
 import csv
+import datetime
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q
 from apps.core.mixins import RoleRequiredMixin
-from apps.organizations.models import Department
+from apps.organizations.models import Department, Position
+from apps.accounts.models import CustomUser, UserRole
+from apps.documents.forms import EmployeeDocumentUploadForm
 from .models import Employee, EmployeeStatus, EmploymentType
+from .forms import (
+    OnboardingStep1Form,
+    OnboardingStep2Form,
+    OnboardingStep3Form,
+    OnboardingStep4Form,
+)
 
 class EmployeeListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     model = Employee
@@ -54,18 +65,31 @@ class EmployeeDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'employee'
 
     def get_object(self, queryset=None):
-        # Employees can view their own profile, HR can view anyone's
         pk = self.kwargs.get('pk')
         if pk:
             obj = get_object_or_404(Employee.objects.select_related('department', 'position', 'user'), pk=pk)
             user = self.request.user
             if user.role == 'EMPLOYEE' and not user.is_superuser:
                 if not hasattr(user, 'employee_profile') or user.employee_profile.id != obj.id:
-                    # Restrict access
                     from django.core.exceptions import PermissionDenied
                     raise PermissionDenied("You can only view your own employee profile.")
             return obj
         return self.request.user.employee_profile
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        emp = self.object
+
+        # Retrieve documents based on permission level
+        docs = emp.documents.select_related('uploaded_by').all()
+        if user.role == 'EMPLOYEE' or user.role == 'HR_STAFF':
+            docs = docs.filter(is_confidential=False)
+
+        context['documents'] = docs
+        context['document_form'] = EmployeeDocumentUploadForm()
+        context['can_upload_doc'] = user.is_superuser or user.role in ['SUPER_ADMIN', 'HR_ADMIN', 'HR_STAFF']
+        return context
 
 class EmployeeExportCSVView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ['SUPER_ADMIN', 'HR_ADMIN']
@@ -92,3 +116,173 @@ class EmployeeExportCSVView(LoginRequiredMixin, RoleRequiredMixin, View):
                 emp.phone_number,
             ])
         return response
+
+class EmployeeOnboardingWizardView(LoginRequiredMixin, RoleRequiredMixin, View):
+    """
+    Multi-Step Onboarding Wizard matching UI Reference Screen 4:
+    Part 1 -> Part 2 -> Part 3 -> Part 4 -> Finish
+    """
+    allowed_roles = ['SUPER_ADMIN', 'HR_ADMIN', 'HR_STAFF']
+    template_name = 'employees/onboarding_wizard.html'
+
+    def get_session_data(self):
+        return self.request.session.get('onboarding_data', {})
+
+    def save_session_data(self, data):
+        session_data = self.get_session_data()
+        session_data.update(data)
+        self.request.session['onboarding_data'] = session_data
+
+    def get(self, request, step=1):
+        step = int(step)
+        if step < 1 or step > 5:
+            return redirect('employees:onboard_step', step=1)
+
+        data = self.get_session_data()
+        form = None
+
+        if step == 1:
+            form = OnboardingStep1Form(initial=data)
+        elif step == 2:
+            form = OnboardingStep2Form(initial=data)
+        elif step == 3:
+            form = OnboardingStep3Form(initial=data)
+        elif step == 4:
+            form = OnboardingStep4Form(initial=data)
+        elif step == 5:
+            # Review / Finish step
+            context = self.get_finish_context(data)
+            context['current_step'] = 5
+            return render(request, self.template_name, context)
+
+        return render(request, self.template_name, {
+            'form': form,
+            'current_step': step,
+            'session_data': data,
+            'candidate_name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip() or "New Employee"
+        })
+
+    def post(self, request, step=1):
+        step = int(step)
+        data = self.get_session_data()
+
+        if step == 1:
+            form = OnboardingStep1Form(request.POST)
+            if form.is_valid():
+                cleaned = form.cleaned_data
+                if cleaned.get('birth_date'):
+                    cleaned['birth_date'] = cleaned['birth_date'].strftime('%Y-%m-%d')
+                self.save_session_data(cleaned)
+                return redirect('employees:onboard_step', step=2)
+
+        elif step == 2:
+            form = OnboardingStep2Form(request.POST)
+            if form.is_valid():
+                cleaned = form.cleaned_data
+                self.save_session_data({
+                    'department_id': cleaned['department'].id,
+                    'department_name': cleaned['department'].name,
+                    'position_id': cleaned['position'].id,
+                    'position_title': cleaned['position'].title,
+                    'employment_type': cleaned['employment_type'],
+                    'hire_date': cleaned['hire_date'].strftime('%Y-%m-%d'),
+                    'probation_end_date': cleaned['probation_end_date'].strftime('%Y-%m-%d') if cleaned.get('probation_end_date') else None,
+                })
+                return redirect('employees:onboard_step', step=3)
+
+        elif step == 3:
+            form = OnboardingStep3Form(request.POST)
+            if form.is_valid():
+                cleaned = form.cleaned_data
+                self.save_session_data({
+                    'work_email': cleaned['work_email'],
+                    'password': cleaned['password'],
+                    'role': cleaned['role'],
+                })
+                return redirect('employees:onboard_step', step=4)
+
+        elif step == 4:
+            form = OnboardingStep4Form(request.POST)
+            if form.is_valid():
+                cleaned = form.cleaned_data
+                self.save_session_data(cleaned)
+                return redirect('employees:onboard_step', step=5)
+
+        elif step == 5:
+            # Commit atomic creation
+            return self.complete_onboarding(request)
+
+        return render(request, self.template_name, {
+            'form': form,
+            'current_step': step,
+            'session_data': data,
+            'candidate_name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip() or "New Employee"
+        })
+
+    def get_finish_context(self, data):
+        dept_name = data.get('department_name', 'Not Specified')
+        pos_title = data.get('position_title', 'Not Specified')
+        return {
+            'summary': data,
+            'candidate_name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip(),
+            'dept_name': dept_name,
+            'pos_title': pos_title,
+            'hire_date': data.get('hire_date'),
+            'work_location': data.get('work_location'),
+            'classification': data.get('employment_type'),
+            'work_email': data.get('work_email'),
+            'employee_id': data.get('employee_id_number'),
+        }
+
+    def complete_onboarding(self, request):
+        data = self.get_session_data()
+        try:
+            with transaction.atomic():
+                # 1. Create CustomUser
+                user = CustomUser.objects.create_user(
+                    email=data['work_email'],
+                    password=data['password'],
+                    role=data.get('role', UserRole.EMPLOYEE),
+                    is_active=True
+                )
+
+                # 2. Parse dates
+                hire_date = datetime.datetime.strptime(data['hire_date'], '%Y-%m-%d').date()
+                birth_date = None
+                if data.get('birth_date'):
+                    birth_date = datetime.datetime.strptime(data['birth_date'], '%Y-%m-%d').date()
+
+                probation_end_date = None
+                if data.get('probation_end_date'):
+                    probation_end_date = datetime.datetime.strptime(data['probation_end_date'], '%Y-%m-%d').date()
+
+                # 3. Create Employee
+                emp = Employee.objects.create(
+                    user=user,
+                    employee_id_number=data['employee_id_number'],
+                    first_name=data['first_name'],
+                    middle_name=data.get('middle_name', ''),
+                    last_name=data['last_name'],
+                    department_id=data['department_id'],
+                    position_id=data['position_id'],
+                    employment_type=data['employment_type'],
+                    status=EmployeeStatus.ACTIVE,
+                    work_location=data.get('work_location', 'Main Office'),
+                    hire_date=hire_date,
+                    probation_end_date=probation_end_date,
+                    birth_date=birth_date,
+                    phone_number=data.get('phone_number', ''),
+                    emergency_contact_name=data.get('emergency_contact_name', ''),
+                    emergency_contact_phone=data.get('emergency_contact_phone', ''),
+                )
+
+                # Clear session
+                if 'onboarding_data' in request.session:
+                    del request.session['onboarding_data']
+
+                messages.success(request, f"Employee {emp.full_name} ({emp.employee_id_number}) has been successfully onboarded!")
+                return redirect('employees:detail', pk=emp.id)
+
+        except Exception as e:
+            messages.error(request, f"Error completing onboarding: {str(e)}")
+            return redirect('employees:onboard_step', step=5)

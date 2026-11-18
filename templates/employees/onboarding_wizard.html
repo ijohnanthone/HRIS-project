@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Onboarding Wizard | HRequest{% endblock %}
+{% block page_title %}Onboarding{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <h5 class="fw-bold mb-1">
+                Onboarding a new employee - <span class="text-primary">{{ candidate_name }}</span>
+            </h5>
+            <p class="text-muted small mb-0">Follow the 4-step wizard to register and provision employee profile and credentials.</p>
+        </div>
+        <a href="{% url 'employees:list' %}" class="btn btn-sm btn-light border">
+            <i class="bi bi-x-lg me-1"></i> Cancel
+        </a>
+    </div>
+
+    <!-- Stepper Navigation (Matching UI Reference Screen 4) -->
+    <div class="d-flex align-items-center gap-3 mt-4 overflow-auto py-2">
+        <a href="{% url 'employees:onboard_step' 1 %}" class="text-decoration-none {% if current_step == 1 %}fw-bold text-primary border-bottom border-primary border-2 pb-1{% elif current_step > 1 %}text-success fw-medium{% else %}text-muted{% endif %}">
+            {% if current_step > 1 %}<i class="bi bi-check-circle-fill me-1"></i>{% endif %}Part 1: Personal
+        </a>
+        <span class="text-muted opacity-50">&bull;&bull;&bull;&bull;</span>
+        <a href="{% if current_step > 2 %}{% url 'employees:onboard_step' 2 %}{% else %}#{% endif %}" class="text-decoration-none {% if current_step == 2 %}fw-bold text-primary border-bottom border-primary border-2 pb-1{% elif current_step > 2 %}text-success fw-medium{% else %}text-muted{% endif %}">
+            {% if current_step > 2 %}<i class="bi bi-check-circle-fill me-1"></i>{% endif %}Part 2: Job & Role
+        </a>
+        <span class="text-muted opacity-50">&bull;&bull;&bull;&bull;</span>
+        <a href="{% if current_step > 3 %}{% url 'employees:onboard_step' 3 %}{% else %}#{% endif %}" class="text-decoration-none {% if current_step == 3 %}fw-bold text-primary border-bottom border-primary border-2 pb-1{% elif current_step > 3 %}text-success fw-medium{% else %}text-muted{% endif %}">
+            {% if current_step > 3 %}<i class="bi bi-check-circle-fill me-1"></i>{% endif %}Part 3: Credentials
+        </a>
+        <span class="text-muted opacity-50">&bull;&bull;&bull;&bull;</span>
+        <a href="{% if current_step > 4 %}{% url 'employees:onboard_step' 4 %}{% else %}#{% endif %}" class="text-decoration-none {% if current_step == 4 %}fw-bold text-primary border-bottom border-primary border-2 pb-1{% elif current_step > 4 %}text-success fw-medium{% else %}text-muted{% endif %}">
+            {% if current_step > 4 %}<i class="bi bi-check-circle-fill me-1"></i>{% endif %}Part 4: Emergency
+        </a>
+        <span class="text-muted opacity-50">&bull;&bull;&bull;&bull;</span>
+        <span class="{% if current_step == 5 %}fw-bold text-primary border-bottom border-primary border-2 pb-1{% else %}text-muted{% endif %}">
+            Finish & Review
+        </span>
+    </div>
+</div>
+
+<div class="card-hr">
+    {% if current_step < 5 %}
+    <!-- Step Form Body -->
+    <div class="card-hr-header">
+        <h5 class="card-hr-title">
+            {% if current_step == 1 %}
+                <i class="bi bi-person me-2 text-primary"></i>Part 1: Personal & Identification Information
+            {% elif current_step == 2 %}
+                <i class="bi bi-briefcase me-2 text-primary"></i>Part 2: Department, Position & Employment Terms
+            {% elif current_step == 3 %}
+                <i class="bi bi-shield-lock me-2 text-primary"></i>Part 3: Work Email & Security Credentials
+            {% elif current_step == 4 %}
+                <i class="bi bi-telephone-plus me-2 text-primary"></i>Part 4: Employee ID & Emergency Details
+            {% endif %}
+        </h5>
+    </div>
+
+    <form method="post" novalidate class="card-hr-body">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger py-2 px-3 small rounded-3 mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Please correct the highlighted errors below before proceeding.
+        </div>
+        {% endif %}
+
+        <div class="row g-3">
+            {% for field in form %}
+            <div class="{% if field.name in 'first_name,last_name,department,position,hire_date,probation_end_date,emergency_contact_name,emergency_contact_phone,work_location,phone_number' %}col-md-6{% else %}col-12{% endif %}">
+                <label for="{{ field.id_for_label }}" class="form-label fw-semibold small text-secondary">
+                    {{ field.label }} {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                <div class="form-text text-muted small">{{ field.help_text }}</div>
+                {% endif %}
+                {% if field.errors %}
+                <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+            {% if current_step > 1 %}
+            <a href="{% url 'employees:onboard_step' current_step|add:'-1' %}" class="btn btn-light border px-4">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                Next <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+        </div>
+    </form>
+
+    {% else %}
+    <!-- Step 5: Finish & Final Review (Matching UI Reference Screen 4 Exact Layout) -->
+    <div class="card-hr-header">
+        <h5 class="card-hr-title">
+            <i class="bi bi-clipboard-check me-2 text-primary"></i>Final Onboarding Review
+        </h5>
+    </div>
+
+    <div class="card-hr-body">
+        <div class="row g-4 align-items-center">
+            <!-- Left Profile Pillar -->
+            <div class="col-md-4 text-center border-end pe-md-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold mx-auto mb-3" 
+                     style="width: 100px; height: 100px; background-color: var(--hr-corporate-blue); font-size: 2.5rem;">
+                    {{ candidate_name|slice:":1"|upper }}
+                </div>
+                <h4 class="fw-bold mb-1">{{ candidate_name }}</h4>
+                <p class="text-primary fw-medium mb-1">{{ pos_title }}</p>
+                <p class="text-muted small">Employee ID: <strong>{{ employee_id }}</strong></p>
+                <span class="badge badge-status badge-status-onboarding">Ready for Provisioning</span>
+            </div>
+
+            <!-- Right Detail Pillar (Matching Reference Screen 4) -->
+            <div class="col-md-8 ps-md-4">
+                <h6 class="text-muted fw-bold text-uppercase small mb-3">Employment Summary</h6>
+                
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Job Title</div>
+                    <div class="col-sm-8 fw-semibold text-dark">{{ pos_title }}</div>
+                </div>
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Department</div>
+                    <div class="col-sm-8 text-dark">{{ dept_name }}</div>
+                </div>
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Work Location</div>
+                    <div class="col-sm-8 text-dark">{{ work_location }}</div>
+                </div>
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Classification</div>
+                    <div class="col-sm-8 text-dark">{{ classification }}</div>
+                </div>
+                <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Hire Date</div>
+                    <div class="col-sm-8 text-dark">{{ hire_date }}</div>
+                </div>
+                <div class="row py-2">
+                    <div class="col-sm-4 text-muted small fw-semibold">Login Work Email</div>
+                    <div class="col-sm-8 text-primary fw-medium">{{ work_email }}</div>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'employees:onboard_step' 5 %}" class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+            {% csrf_token %}
+            <a href="{% url 'employees:onboard_step' 4 %}" class="btn btn-light border px-4">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                <i class="bi bi-check-circle me-1"></i> Finish & Create Employee
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
