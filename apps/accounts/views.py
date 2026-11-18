@@ -112,7 +112,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 context['my_today_attendance'] = Attendance.objects.filter(employee=emp, date=today).first()
                 context['my_recent_attendance'] = Attendance.objects.filter(employee=emp).order_by('-date')[:5]
                 context['my_requests'] = DocumentRequest.objects.filter(employee=emp).order_by('-created_at')[:5]
-                context['latest_payslip'] = PayslipRecord.objects.filter(employee=emp).select_related('period').order_by('-period__start_date').first()
+                context['latest_payslip'] = PayslipRecord.objects.filter(employee=emp).select_related('payroll_period').order_by('-payroll_period__period_year', '-payroll_period__period_month').first()
             else:
                 context['employee'] = None
                 context['my_today_attendance'] = None
