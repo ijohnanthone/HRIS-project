@@ -21,6 +21,10 @@ private_storage/
 # Environment variables
 .env
 
+# Firebase
+.firebase/
+staticfiles/
+
 # IDEs
 .vscode/
 .idea/
