@@ -124,12 +124,16 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# Public Media files (e.g. avatars)
+# Public Media files (e.g. avatars) & Private Storage for Sensitive Documents
+# On Vercel serverless functions, /var/task is read-only so writable storage must use /tmp
+IS_VERCEL = bool(os.getenv('VERCEL') or os.getenv('VERCEL_ENV'))
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-# Private Storage for Sensitive Documents (never directly exposed via static server)
-PRIVATE_STORAGE_ROOT = BASE_DIR / 'private_storage'
+if IS_VERCEL:
+    MEDIA_ROOT = Path('/tmp/media')
+    PRIVATE_STORAGE_ROOT = Path('/tmp/private_storage')
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
+    PRIVATE_STORAGE_ROOT = BASE_DIR / 'private_storage'
 
 # Auth URLs
 LOGIN_URL = 'accounts:login'

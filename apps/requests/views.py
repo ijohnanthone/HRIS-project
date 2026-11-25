@@ -263,7 +263,7 @@ class COEDocumentDownloadView(LoginRequiredMixin, View):
         user = request.user
 
         # 1. Ticket must be fulfilled/completed
-        if coe.status != RequestStatus.FULFILLED or not coe.generated_document:
+        if coe.status != RequestStatus.FULFILLED:
             raise PermissionDenied("No certificate has been approved or released for this ticket yet.")
 
         # 2. Authorization check
@@ -275,8 +275,16 @@ class COEDocumentDownloadView(LoginRequiredMixin, View):
         else:
             raise PermissionDenied("Unauthorized certificate access.")
 
-        if not coe.generated_document.storage.exists(coe.generated_document.name):
-            raise Http404("Certificate file not found in storage.")
+        # 3. Regenerate auto-generated COE on the fly if missing from ephemeral storage (e.g. Vercel /tmp)
+        if not coe.generated_document or not coe.generated_document.storage.exists(coe.generated_document.name):
+            if coe.fulfillment_method == FulfillmentMethod.AUTO_GENERATED:
+                template = COETemplate.objects.filter(is_active=True).first()
+                pdf_bytes = generate_coe_pdf(coe, template)
+                filename = f"COE_{coe.ticket_number}_{coe.employee.employee_id_number}.pdf"
+                coe.generated_document.save(filename, ContentFile(pdf_bytes), save=False)
+                coe.save(update_fields=['generated_document'])
+            else:
+                raise Http404("Certificate file not found in storage.")
 
         content_type, _ = mimetypes.guess_type(coe.generated_document.name)
         response = FileResponse(coe.generated_document.open('rb'), content_type=content_type or 'application/pdf')
