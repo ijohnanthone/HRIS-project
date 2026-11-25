@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 from apps.organizations.models import Department, Position
 from apps.accounts.models import CustomUser, UserRole
-from .models import Employee, EmploymentType, EmployeeStatus
+from .models import Employee, EmploymentType, EmployeeStatus, WorkLocation
 
 class OnboardingStep1Form(forms.Form):
     first_name = forms.CharField(
@@ -32,11 +32,11 @@ class OnboardingStep1Form(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+1 (555) 019-3382'})
     )
-    work_location = forms.CharField(
-        label=_("Work Location"),
-        max_length=100,
-        initial='New York',
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. New York'})
+    work_location = forms.ChoiceField(
+        label=_("Work Location / Site"),
+        choices=WorkLocation.choices,
+        initial=WorkLocation.HEADQUARTERS,
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
 
 class OnboardingStep2Form(forms.Form):

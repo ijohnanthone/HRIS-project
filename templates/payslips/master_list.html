@@ -85,7 +85,7 @@
                     </td>
                     <td>{{ p.employee.department.name }}</td>
                     <td><span class="badge bg-light text-dark border">{{ p.payroll_period.label }}</span></td>
-                    <td><span class="small text-secondary">{{ p.employee.work_location }}</span></td>
+                    <td><span class="small text-secondary">{{ p.employee.get_work_location_display }}</span></td>
                     <td>
                         <span class="badge badge-status {{ p.status_badge_class }}">
                             {{ p.get_status_display }}

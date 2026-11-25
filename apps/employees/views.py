@@ -11,7 +11,7 @@ from apps.core.mixins import RoleRequiredMixin
 from apps.organizations.models import Department, Position
 from apps.accounts.models import CustomUser, UserRole
 from apps.documents.forms import EmployeeDocumentUploadForm
-from .models import Employee, EmployeeStatus, EmploymentType
+from .models import Employee, EmployeeStatus, EmploymentType, WorkLocation
 from .forms import (
     OnboardingStep1Form,
     OnboardingStep2Form,
@@ -222,13 +222,15 @@ class EmployeeOnboardingWizardView(LoginRequiredMixin, RoleRequiredMixin, View):
     def get_finish_context(self, data):
         dept_name = data.get('department_name', 'Not Specified')
         pos_title = data.get('position_title', 'Not Specified')
+        loc_val = data.get('work_location', '')
+        loc_display = dict(WorkLocation.choices).get(loc_val, loc_val)
         return {
             'summary': data,
             'candidate_name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip(),
             'dept_name': dept_name,
             'pos_title': pos_title,
             'hire_date': data.get('hire_date'),
-            'work_location': data.get('work_location'),
+            'work_location': loc_display,
             'classification': data.get('employment_type'),
             'work_email': data.get('work_email'),
             'employee_id': data.get('employee_id_number'),

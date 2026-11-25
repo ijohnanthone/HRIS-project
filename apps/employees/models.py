@@ -17,6 +17,16 @@ class EmployeeStatus(models.TextChoices):
     ON_LEAVE = 'ON_LEAVE', _('On Leave')
     TERMINATED = 'TERMINATED', _('Terminated')
 
+class WorkLocation(models.TextChoices):
+    HEADQUARTERS = 'Headquarters', _('Headquarters (Main Office)')
+    MANILA = 'Manila Site', _('Manila Site')
+    CEBU = 'Cebu Site', _('Cebu Site')
+    DAVAO = 'Davao Site', _('Davao Site')
+    SINGAPORE = 'Singapore Branch', _('Singapore Branch')
+    NEW_YORK = 'New York', _('New York Office')
+    LONDON = 'London Branch', _('London Branch')
+    REMOTE = 'Remote / WFH', _('Remote / Work From Home')
+
 class Employee(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
@@ -62,7 +72,12 @@ class Employee(models.Model):
         default=EmployeeStatus.ACTIVE,
         db_index=True
     )
-    work_location = models.CharField(_('work location'), max_length=100, default='Headquarters')
+    work_location = models.CharField(
+        _('work location'),
+        max_length=100,
+        choices=WorkLocation.choices,
+        default=WorkLocation.HEADQUARTERS
+    )
 
     hire_date = models.DateField(_('date of hire'))
     probation_end_date = models.DateField(_('probation end date'), null=True, blank=True)
