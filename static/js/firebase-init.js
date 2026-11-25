@@ -1,8 +1,8 @@
 // HRequest HRIS - Firebase Web SDK Initialization
-// Connected to Firebase Project: hr-request-7c711
+// Connected to Firebase Project: hr-request-7c711 (Region: asia-southeast1)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAnalytics, isSupported, logEvent } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+import { getDatabase, ref, set, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyAFJYOX9z6GyNnkAhLoQrbwvMZbmFHELhk",
@@ -15,15 +15,49 @@ export const firebaseConfig = {
   measurementId: "G-85SLF46BVR"
 };
 
-// Initialize Firebase App
+// 1. Initialize Firebase App
 export const app = initializeApp(firebaseConfig);
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+
+// 2. Initialize Realtime Database (Guaranteed even if Analytics is blocked by ad-blockers)
 export const database = getDatabase(app);
 
-// Make available globally for inline scripts or console debugging
+// 3. Initialize Analytics safely (with isSupported check)
+export let analytics = null;
+try {
+  const analyticsSupported = await isSupported();
+  if (analyticsSupported) {
+    analytics = getAnalytics(app);
+  }
+} catch (err) {
+  console.info("[Firebase Analytics] Analytics skipped or blocked:", err.message);
+}
+
+// 4. Global window exports for seamless client-side usage in templates
 window.firebaseApp = app;
-window.firebaseAnalytics = analytics;
 window.firebaseDb = database;
+window.firebaseAnalytics = analytics;
+window.firebaseRef = ref;
+window.firebaseSet = set;
+window.firebasePush = push;
+window.firebaseOnValue = onValue;
+window.firebaseServerTimestamp = serverTimestamp;
+
+// Helper function to broadcast real-time HR events (e.g. punch notifications, ticket alerts)
+window.publishRealtimeNotice = (category, payload) => {
+  if (database) {
+    try {
+      const noticesRef = ref(database, `live_notices/${category}`);
+      return push(noticesRef, {
+        ...payload,
+        timestamp: Date.now()
+      });
+    } catch (e) {
+      console.warn("[Firebase RTDB] Publish failed:", e);
+    }
+  }
+};
+
+// Helper function to log telemetry events
 window.logFirebaseEvent = (eventName, params = {}) => {
   if (analytics) {
     try {
@@ -35,4 +69,4 @@ window.logFirebaseEvent = (eventName, params = {}) => {
   }
 };
 
-console.log("⚡ HRequest connected to Firebase Project: hr-request-7c711");
+console.log("⚡ HRequest connected to Firebase Project: hr-request-7c711 (RTDB & Analytics Ready)");
