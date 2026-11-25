@@ -24,6 +24,8 @@ private_storage/
 # Firebase
 .firebase/
 staticfiles/
+*firebase-adminsdk*.json
+serviceAccountKey.json
 
 # IDEs
 .vscode/

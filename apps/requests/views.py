@@ -121,6 +121,16 @@ class COERequestCreateView(LoginRequiredMixin, View):
                 remarks=f"Request submitted with stated purpose: {coe_req.purpose}"
             )
 
+            # Sync real-time event to Firebase Realtime Database (no-ops if unconfigured)
+            from apps.core.firebase_admin_helper import push_realtime_event
+            push_realtime_event('hr_requests', {
+                'ticket_number': coe_req.ticket_number,
+                'employee': coe_req.employee.full_name,
+                'request_type': coe_req.get_request_type_display(),
+                'status': coe_req.get_status_display(),
+                'created_at': timezone.now().isoformat(),
+            })
+
             messages.success(request, f"COE Request {coe_req.ticket_number} submitted successfully! Your HR team will review it shortly.")
             return redirect('requests:my_requests')
 
