@@ -97,6 +97,9 @@ class COERequestCreateView(LoginRequiredMixin, View):
     """
     Submits a new COE request on behalf of the signed-in employee.
     """
+    def get(self, request, *args, **kwargs):
+        return redirect('requests:my_requests')
+
     def post(self, request, *args, **kwargs):
         user = request.user
         if not hasattr(user, 'employee_profile'):
