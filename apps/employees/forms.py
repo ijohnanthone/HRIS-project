@@ -68,12 +68,12 @@ class OnboardingStep2Form(forms.Form):
 class OnboardingStep3Form(forms.Form):
     work_email = forms.EmailField(
         label=_("Company Login Email"),
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'chris.glasser@company.com'})
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'employee.name@hrequest.com'})
     )
     password = forms.CharField(
-        label=_("Initial Temporary Password"),
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': '••••••••'}),
-        initial='HRequest2026!'
+        label=_("Login Password"),
+        widget=forms.PasswordInput(render_value=True, attrs={'class': 'form-control', 'placeholder': 'Set login password for this employee'}),
+        min_length=6
     )
     role = forms.ChoiceField(
         choices=UserRole.choices,

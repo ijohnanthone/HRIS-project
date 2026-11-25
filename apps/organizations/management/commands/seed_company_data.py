@@ -74,33 +74,22 @@ class Command(BaseCommand):
             defaults={'title': 'Senior Accountant', 'department': fin_dept, 'grade_level': 'L3'}
         )
 
-        self.stdout.write("Linking core demo accounts to Employee profiles...")
-        default_pwd = 'HRequest2026!'
+        self.stdout.write("Setting up HR Admin profile (hr@hrequest.com)...")
 
-        # 3. Core Accounts -> Employee Links
-        # Kurt Bates (Super Admin)
-        admin_user = CustomUser.objects.get(email='admin@hrequest.com')
-        kurt, _ = Employee.objects.get_or_create(
-            user=admin_user,
+        # Paula Mora (HR Admin)
+        hr_user, created = CustomUser.objects.get_or_create(
+            email='hr@hrequest.com',
             defaults={
-                'employee_id_number': '00100',
-                'first_name': 'Kurt',
-                'last_name': 'Bates',
-                'department': exec_dept,
-                'position': ceo_pos,
-                'employment_type': EmploymentType.FULL_TIME,
-                'status': EmployeeStatus.ACTIVE,
-                'work_location': 'Headquarters, New York',
-                'hire_date': datetime.date(2021, 1, 15),
-                'phone_number': '+1 (555) 019-2831',
-                'personal_email': 'kurt.bates@example.com',
+                'role': UserRole.HR_ADMIN,
+                'is_staff': True,
+                'is_superuser': False,
+                'is_active': True,
             }
         )
-        exec_dept.head_of_department = kurt
-        exec_dept.save()
+        if created:
+            hr_user.set_password('hrrequest')
+            hr_user.save()
 
-        # Paula Mora (HR Admin - matching UI Reference)
-        hr_user = CustomUser.objects.get(email='hr@hrequest.com')
         paula, _ = Employee.objects.get_or_create(
             user=hr_user,
             defaults={
@@ -111,208 +100,18 @@ class Command(BaseCommand):
                 'position': hr_mgr_pos,
                 'employment_type': EmploymentType.FULL_TIME,
                 'status': EmployeeStatus.ACTIVE,
-                'work_location': 'New York',
+                'work_location': 'Headquarters',
                 'hire_date': datetime.date(2022, 3, 1),
-                'phone_number': '+1 (555) 014-9982',
-                'personal_email': 'paula.mora@example.com',
+                'phone_number': '+63 917 000 0001',
+                'personal_email': 'hr@hrequest.com',
             }
         )
         hr_dept.head_of_department = paula
         hr_dept.save()
 
-        # Alex Buckmaster (HR Staff)
-        staff_user = CustomUser.objects.get(email='staff@hrequest.com')
-        Employee.objects.get_or_create(
-            user=staff_user,
-            defaults={
-                'employee_id_number': '00112',
-                'first_name': 'Alex',
-                'last_name': 'Buckmaster',
-                'department': hr_dept,
-                'position': hr_spec_pos,
-                'employment_type': EmploymentType.FULL_TIME,
-                'status': EmployeeStatus.ACTIVE,
-                'work_location': 'New York',
-                'hire_date': datetime.date(2023, 6, 15),
-                'phone_number': '+1 (555) 018-7741',
-                'personal_email': 'alex.b@example.com',
-            }
-        )
-
-        # Chris Glasser (Employee - Java Developer, matching UI reference onboarding screen)
-        emp_user = CustomUser.objects.get(email='employee@hrequest.com')
-        Employee.objects.get_or_create(
-            user=emp_user,
-            defaults={
-                'employee_id_number': '00230',
-                'first_name': 'Chris',
-                'last_name': 'Glasser',
-                'department': it_dept,
-                'position': java_dev_pos,
-                'employment_type': EmploymentType.FULL_TIME,
-                'status': EmployeeStatus.ACTIVE,
-                'work_location': 'New York',
-                'hire_date': datetime.date(2023, 7, 12),
-                'phone_number': '+1 (555) 019-3382',
-                'personal_email': 'chris.glasser@example.com',
-            }
-        )
-
-        # 4. Additional Sample Employees (Directly from reference table screen 2)
-        additional_samples = [
-            {
-                'email': 'kathy.pacheco@hrequest.com',
-                'id_num': '00236',
-                'first_name': 'Kathy',
-                'last_name': 'Pacheco',
-                'dept': sales_dept,
-                'pos': sales_rep_pos,
-                'type': EmploymentType.FULL_TIME,
-                'status': EmployeeStatus.ACTIVE,
-                'loc': 'New York',
-                'phone': '+1 (555) 651-0921',
-                'hire': datetime.date(2023, 1, 10),
-            },
-            {
-                'email': 'frances.swann@hrequest.com',
-                'id_num': '00235',
-                'first_name': 'Frances',
-                'last_name': 'Swann',
-                'dept': fin_dept,
-                'pos': acct_pos,
-                'type': EmploymentType.PART_TIME,
-                'status': EmployeeStatus.OFFER_PENDING,
-                'loc': 'Singapore',
-                'phone': '+65 744-6291',
-                'hire': datetime.date(2024, 2, 1),
-            },
-            {
-                'email': 'eddie.lake@hrequest.com',
-                'id_num': '00234',
-                'first_name': 'Eddie',
-                'last_name': 'Lake',
-                'dept': it_dept,
-                'pos': sr_dev_pos,
-                'type': EmploymentType.FULL_TIME,
-                'status': EmployeeStatus.ONBOARDING,
-                'loc': 'London',
-                'phone': '+44 267 739-6240',
-                'hire': datetime.date(2024, 4, 15),
-            },
-            {
-                'email': 'judith.rodriguez@hrequest.com',
-                'id_num': '00233',
-                'first_name': 'Judith',
-                'last_name': 'Rodriguez',
-                'dept': it_dept,
-                'pos': lead_arch_pos,
-                'type': EmploymentType.FULL_TIME,
-                'status': EmployeeStatus.ACTIVE,
-                'loc': 'Singapore',
-                'phone': '+65 474-9169',
-                'hire': datetime.date(2022, 8, 20),
-            },
-            {
-                'email': 'john.dukes@hrequest.com',
-                'id_num': '00232',
-                'first_name': 'John',
-                'last_name': 'Dukes',
-                'dept': sales_dept,
-                'pos': smm_pos,
-                'type': EmploymentType.FULL_TIME,
-                'status': EmployeeStatus.ACTIVE,
-                'loc': 'New York',
-                'phone': '+1 (555) 838-9011',
-                'hire': datetime.date(2023, 3, 5),
-            },
-            {
-                'email': 'autumn.phillips@hrequest.com',
-                'id_num': '00231',
-                'first_name': 'Autumn',
-                'last_name': 'Phillips',
-                'dept': sales_dept,
-                'pos': sales_head_pos,
-                'type': EmploymentType.FULL_TIME,
-                'status': EmployeeStatus.ACTIVE,
-                'loc': 'London',
-                'phone': '+44 765 322-1399',
-                'hire': datetime.date(2022, 5, 18),
-            },
-        ]
-
-        for s in additional_samples:
-            user, _ = CustomUser.objects.get_or_create(
-                email=s['email'],
-                defaults={
-                    'role': UserRole.EMPLOYEE,
-                    'is_staff': False,
-                    'is_superuser': False,
-                    'is_active': True,
-                }
-            )
-            user.set_password(default_pwd)
-            user.save()
-
-            Employee.objects.get_or_create(
-                user=user,
-                defaults={
-                    'employee_id_number': s['id_num'],
-                    'first_name': s['first_name'],
-                    'last_name': s['last_name'],
-                    'department': s['dept'],
-                    'position': s['pos'],
-                    'employment_type': s['type'],
-                    'status': s['status'],
-                    'work_location': s['loc'],
-                    'hire_date': s['hire'],
-                    'phone_number': s['phone'],
-                }
-            )
-
-        # Set sales dept head
-        autumn = Employee.objects.filter(first_name='Autumn', last_name='Phillips').first()
-        if autumn:
-            sales_dept.head_of_department = autumn
-            sales_dept.save()
-
-        # Set IT dept head
-        judith = Employee.objects.filter(first_name='Judith', last_name='Rodriguez').first()
-        if judith:
-            it_dept.head_of_department = judith
-            it_dept.save()
-
-        # Seed sample documents for Chris Glasser
-        from apps.documents.models import EmployeeDocument, DocumentCategory
-        chris = Employee.objects.filter(employee_id_number='00230').first()
-        if chris:
-            EmployeeDocument.objects.get_or_create(
-                employee=chris,
-                title='Signed Employment Contract 2023',
-                defaults={
-                    'category': DocumentCategory.CONTRACT,
-                    'file': 'documents/sample_contract.pdf',
-                    'file_size': 1024,
-                    'mime_type': 'application/pdf',
-                    'is_confidential': True,
-                    'uploaded_by': hr_user,
-                }
-            )
-            EmployeeDocument.objects.get_or_create(
-                employee=chris,
-                title='Primary Government ID Copy',
-                defaults={
-                    'category': DocumentCategory.GOVERNMENT_ID,
-                    'file': 'documents/sample_contract.pdf',
-                    'file_size': 2048,
-                    'mime_type': 'application/pdf',
-                    'is_confidential': False,
-                    'uploaded_by': hr_user,
-                }
-            )
-
-        # Seed default active COE Template & sample pending COE request
-        from apps.requests.models import COETemplate, TemplateType, DocumentRequest, RequestType, RequestStatus, RequestHistory
-        template, _ = COETemplate.objects.get_or_create(
+        # Seed default active COE Template
+        from apps.requests.models import COETemplate, TemplateType
+        COETemplate.objects.get_or_create(
             name='Standard Corporate COE Template v2026',
             defaults={
                 'template_type': TemplateType.WITHOUT_COMPENSATION,
@@ -324,78 +123,22 @@ class Command(BaseCommand):
             }
         )
 
-        if chris:
-            coe_sample, created = DocumentRequest.objects.get_or_create(
-                ticket_number='COE-2026-0001',
-                defaults={
-                    'employee': chris,
-                    'request_type': RequestType.COE_WITHOUT_COMPENSATION,
-                    'purpose': 'Application requirement for Bank Credit Assessment and Residential Lease verification.',
-                    'status': RequestStatus.PENDING,
-                }
-            )
-            if created:
-                RequestHistory.objects.create(
-                    request=coe_sample,
-                    actor=emp_user,
-                    action='SUBMITTED',
-                    to_status=RequestStatus.PENDING,
-                    remarks='Initial request submitted for bank verification.'
-                )
-
-        # Seed Payroll Periods & Sample Payslips matching UI Reference Screen 5
-        from apps.payslips.models import PayrollPeriod, PayslipRecord, PayslipStatus
-        period_nov, _ = PayrollPeriod.objects.get_or_create(
+        # Seed current Payroll Period
+        from apps.payslips.models import PayrollPeriod
+        PayrollPeriod.objects.get_or_create(
             period_month=11,
             period_year=2026,
             defaults={'label': 'November 2026', 'is_active': True}
         )
 
-        from apps.payslips.services.payslip_pdf_generator import generate_payslip_pdf
-        from django.core.files.base import ContentFile
-
-        sample_payslips_data = [
-            ('00236', 23789.00, PayslipStatus.PAID),
-            ('00230', 16436.00, PayslipStatus.PAID),
-            ('00231', 22009.00, PayslipStatus.PAID),
-            ('00234', 29333.00, PayslipStatus.PAID),
-        ]
-
-        for emp_id_str, amount, st in sample_payslips_data:
-            target_emp = Employee.objects.filter(employee_id_number=emp_id_str).first()
-            if target_emp:
-                rec, _ = PayslipRecord.objects.get_or_create(
-                    employee=target_emp,
-                    payroll_period=period_nov,
-                    defaults={
-                        'total_salary': amount,
-                        'status': st,
-                        'uploaded_by': hr_user,
-                        'is_released': True,
-                    }
-                )
-                rec.total_salary = amount
-                rec.status = st
-                rec.is_released = True
-                
-                # Generate valid ReportLab PDF in PHP
-                pdf_bytes = generate_payslip_pdf(rec)
-                rec.payslip_file.save(
-                    f"Payslip_{target_emp.employee_id_number}_November_2026.pdf",
-                    ContentFile(pdf_bytes),
-                    save=False
-                )
-                rec.file_size = len(pdf_bytes)
-                rec.save()
-
         # Seed Announcements
         from apps.announcements.models import Announcement, AnnouncementPriority
-        from apps.core.models import Notification, AuditLog
+        from apps.core.models import AuditLog
 
-        announcement1, _ = Announcement.objects.get_or_create(
-            title="Annual Company All-Hands Meeting & Q4 Strategy Review",
+        Announcement.objects.get_or_create(
+            title="Welcome to HRequest HRIS",
             defaults={
-                'content': "Dear Team,\n\nPlease join us this Friday at 3:00 PM for the Q4 All-Hands Meeting. Executive leadership will present quarterly milestones, technological roadmaps, and recognize top contributors.\n\nAttendance is mandatory for all divisions.",
+                'content': "Welcome to HRequest! HR Administrators can onboard new employees, manage attendance, issue COEs, and upload payroll slips.",
                 'priority': AnnouncementPriority.HIGH,
                 'is_pinned': True,
                 'is_published': True,
@@ -403,54 +146,19 @@ class Command(BaseCommand):
             }
         )
 
-        announcement2, _ = Announcement.objects.get_or_create(
-            title="Updated Health and Wellness Benefits Package (2026)",
-            defaults={
-                'content': "We are pleased to introduce enhanced medical, dental, and wellness subsidies starting this month. Check your payslips and benefits portal for enrollment guidelines.",
-                'priority': AnnouncementPriority.NORMAL,
-                'is_pinned': False,
-                'is_published': True,
-                'author': hr_user,
-            }
-        )
-
-        # Seed Notifications
-        if emp_user:
-            Notification.objects.get_or_create(
-                recipient=emp_user,
-                title="Welcome to HRequest HRIS",
-                defaults={
-                    'message': "Your employee portal is active. You can now punch attendance, request COEs, and access payslips.",
-                    'link': '/attendance/my/',
-                    'is_read': False,
-                }
-            )
-
-        if hr_user:
-            Notification.objects.get_or_create(
-                recipient=hr_user,
-                title="New COE Request Submitted",
-                defaults={
-                    'message': "Chris Glasser submitted request COE-2026-0001 for banking review.",
-                    'link': '/requests/',
-                    'is_read': False,
-                }
-            )
-
         # Seed initial Audit Log
         AuditLog.objects.get_or_create(
             action="SYSTEM_INIT",
             model_name="System",
             object_id="0",
             defaults={
-                'actor': admin_user,
-                'changes': {'event': 'Initial seeding of HRequest HRIS master records'},
+                'actor': hr_user,
+                'changes': {'event': 'Initial seeding of HRequest HRIS HR-only master setup'},
                 'ip_address': '127.0.0.1'
             }
         )
 
         self.stdout.write(self.style.SUCCESS(
             f"Successfully seeded {Department.objects.count()} departments, "
-            f"{Position.objects.count()} positions, {Employee.objects.count()} employee records, "
-            f"documents, COE templates, payslips, announcements, and notifications!"
+            f"{Position.objects.count()} positions, and HR Admin account (hr@hrequest.com)!"
         ))
