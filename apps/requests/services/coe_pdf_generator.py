@@ -120,12 +120,15 @@ def generate_coe_pdf(coe_request, template=None):
     hire_date_str = emp.hire_date.strftime('%B %d, %Y')
     emp_name = f"<b>{emp.full_name}</b>"
     pos_title = f"<b>{emp.position.title}</b>"
-    dept_name = f"<b>{emp.department.name}</b>"
+    raw_dept = emp.department.name.strip()
+    dept_label = raw_dept if 'department' in raw_dept.lower() else f"{raw_dept} Department"
+    dept_name = f"<b>{dept_label}</b>"
+    location_clause = f" at our <b>{emp.work_location}</b> office" if emp.work_location else ""
 
     p1 = (
         f"TO WHOM IT MAY CONCERN:<br/><br/>"
-        f"This is to certify that {emp_name} (Employee ID: {emp.employee_id_number}) is a bona fide employee "
-        f"of HRequest Corporation, currently holding the position of {pos_title} under the {dept_name}. "
+        f"This is to certify that {emp_name} (Employee ID: {emp.employee_id_number}) is an official, bona fide employee "
+        f"of HRequest Corporation, currently holding the position of {pos_title} in the {dept_name}{location_clause}. "
         f"The employee commenced active employment with the company on {hire_date_str} and holds "
         f"{emp.get_employment_type_display().lower()} employment status."
     )
