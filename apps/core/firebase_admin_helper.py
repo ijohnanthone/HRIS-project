@@ -2,9 +2,6 @@ import json
 import logging
 import os
 
-import firebase_admin
-from firebase_admin import credentials, db
-
 logger = logging.getLogger(__name__)
 
 DEFAULT_DATABASE_URL = 'https://hr-request-7c711-default-rtdb.asia-southeast1.firebasedatabase.app'
@@ -21,22 +18,25 @@ def init_firebase_admin():
 
     Returns the initialized Firebase App, or None if credentials are not configured.
     """
-    if firebase_admin._apps:
-        return firebase_admin.get_app()
-
     database_url = os.getenv('FIREBASE_DATABASE_URL', DEFAULT_DATABASE_URL).strip() or DEFAULT_DATABASE_URL
     cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON', '').strip()
     cred_path = os.getenv('FIREBASE_CREDENTIALS_PATH', '').strip()
 
-    try:
-        cred = None
-        if cred_json:
-            cred = credentials.Certificate(json.loads(cred_json))
-        elif cred_path and os.path.exists(cred_path):
-            cred = credentials.Certificate(cred_path)
-        else:
-            return None
+    if not cred_json and not (cred_path and os.path.exists(cred_path)):
+        return None
 
+    import firebase_admin
+    from firebase_admin import credentials
+
+    if firebase_admin._apps:
+        return firebase_admin.get_app()
+
+    try:
+        cred = (
+            credentials.Certificate(json.loads(cred_json))
+            if cred_json
+            else credentials.Certificate(cred_path)
+        )
         return firebase_admin.initialize_app(cred, {
             'databaseURL': database_url,
         })
@@ -54,6 +54,7 @@ def push_realtime_event(reference_path: str, payload: dict):
         return None
 
     try:
+        from firebase_admin import db
         ref = db.reference(reference_path)
         created = ref.push(payload)
         return created.key
@@ -71,6 +72,7 @@ def set_realtime_value(reference_path: str, payload: dict) -> bool:
         return False
 
     try:
+        from firebase_admin import db
         ref = db.reference(reference_path)
         ref.set(payload)
         return True

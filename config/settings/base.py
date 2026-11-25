@@ -83,6 +83,8 @@ if DATABASE_URL and (DATABASE_URL.startswith('postgres://') or DATABASE_URL.star
             'PASSWORD': parsed_db.password or '',
             'HOST': parsed_db.hostname or 'localhost',
             'PORT': parsed_db.port or 5432,
+            'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': True,
             'OPTIONS': db_options,
         }
     }
