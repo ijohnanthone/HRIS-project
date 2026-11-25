@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -70,6 +70,11 @@ DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
 
 if DATABASE_URL and (DATABASE_URL.startswith('postgres://') or DATABASE_URL.startswith('postgresql://')):
     parsed_db = urlparse(DATABASE_URL)
+    db_query = parse_qs(parsed_db.query)
+    db_options = {}
+    if 'sslmode' in db_query and db_query['sslmode']:
+        db_options['sslmode'] = db_query['sslmode'][0]
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -78,6 +83,7 @@ if DATABASE_URL and (DATABASE_URL.startswith('postgres://') or DATABASE_URL.star
             'PASSWORD': parsed_db.password or '',
             'HOST': parsed_db.hostname or 'localhost',
             'PORT': parsed_db.port or 5432,
+            'OPTIONS': db_options,
         }
     }
 else:
