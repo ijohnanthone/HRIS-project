@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from .forms import EmailAuthenticationForm
 from .models import CustomUser, UserRole
+from apps.core.seed_once import ensure_team_seed_once
 
 class HRequestLoginView(FormView):
     template_name = 'accounts/login.html'
@@ -16,6 +17,7 @@ class HRequestLoginView(FormView):
     success_url = reverse_lazy('dashboard')
 
     def dispatch(self, request, *args, **kwargs):
+        ensure_team_seed_once()
         if request.user.is_authenticated:
             return redirect(self.get_success_url())
         return super().dispatch(request, *args, **kwargs)
@@ -42,6 +44,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     Unified dashboard router: dynamically serves role-tailored dashboard template
     based on the authenticated user's role.
     """
+    def dispatch(self, request, *args, **kwargs):
+        ensure_team_seed_once()
+        return super().dispatch(request, *args, **kwargs)
+
     def get_template_names(self):
         user = self.request.user
         if user.is_superuser or user.role == UserRole.SUPER_ADMIN:

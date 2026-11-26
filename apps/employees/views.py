@@ -288,3 +288,68 @@ class EmployeeOnboardingWizardView(LoginRequiredMixin, RoleRequiredMixin, View):
         except Exception as e:
             messages.error(request, f"Error completing onboarding: {str(e)}")
             return redirect('employees:onboard_step', step=5)
+
+
+class EmployeeTerminateView(LoginRequiredMixin, RoleRequiredMixin, View):
+    """
+    Allows HR Admin / Super Admin to terminate (fire) an employee:
+    sets status to TERMINATED and deactivates their login account while preserving audit history.
+    """
+    allowed_roles = ['SUPER_ADMIN', 'HR_ADMIN']
+
+    def post(self, request, pk, *args, **kwargs):
+        emp = get_object_or_404(Employee.objects.select_related('user'), pk=pk)
+        if emp.user_id == request.user.id:
+            messages.error(request, "You cannot terminate your own active account.")
+            return redirect('employees:detail', pk=emp.id)
+
+        from apps.core.models import AuditLog
+        with transaction.atomic():
+            emp.status = EmployeeStatus.TERMINATED
+            emp.save(update_fields=['status'])
+            emp.user.is_active = False
+            emp.user.save(update_fields=['is_active'])
+
+            AuditLog.objects.create(
+                actor=request.user,
+                action='EMPLOYEE_TERMINATED',
+                model_name='Employee',
+                object_id=str(emp.id),
+                changes={'details': f"Terminated employee {emp.full_name} (ID: {emp.employee_id_number}) and deactivated login account."}
+            )
+
+        messages.warning(request, f"Employee {emp.full_name} ({emp.employee_id_number}) has been terminated and their login access disabled.")
+        next_url = request.POST.get('next')
+        return redirect(next_url or 'employees:list')
+
+
+class EmployeeDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
+    """
+    Allows HR Admin / Super Admin to permanently delete an employee and their login account.
+    """
+    allowed_roles = ['SUPER_ADMIN', 'HR_ADMIN']
+
+    def post(self, request, pk, *args, **kwargs):
+        emp = get_object_or_404(Employee.objects.select_related('user'), pk=pk)
+        if emp.user_id == request.user.id:
+            messages.error(request, "You cannot delete your own active account.")
+            return redirect('employees:detail', pk=emp.id)
+
+        from apps.core.models import AuditLog
+        emp_name = emp.full_name
+        emp_id_num = emp.employee_id_number
+        emp_uuid = str(emp.id)
+        user_obj = emp.user
+
+        with transaction.atomic():
+            AuditLog.objects.create(
+                actor=request.user,
+                action='EMPLOYEE_DELETED',
+                model_name='Employee',
+                object_id=emp_uuid,
+                changes={'details': f"Permanently deleted employee {emp_name} (ID: {emp_id_num}) and associated user account."}
+            )
+            user_obj.delete()
+
+        messages.success(request, f"Employee {emp_name} ({emp_id_num}) has been permanently deleted from the system.")
+        return redirect('employees:list')

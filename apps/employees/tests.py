@@ -136,3 +136,50 @@ class EmployeeModelAndViewsTests(TestCase):
         self.assertTrue(new_emp.user.check_password('TempPassword2026!'))
         self.assertRedirects(res5, reverse('employees:detail', kwargs={'pk': new_emp.id}))
 
+    def test_hr_admin_can_terminate_employee(self):
+        client = Client()
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
+        res = client.post(reverse('employees:terminate', kwargs={'pk': self.employee.id}))
+        self.assertRedirects(res, reverse('employees:list'))
+        self.employee.refresh_from_db()
+        self.employee.user.refresh_from_db()
+        self.assertEqual(self.employee.status, EmployeeStatus.TERMINATED)
+        self.assertFalse(self.employee.user.is_active)
+
+    def test_regular_employee_cannot_terminate_or_delete(self):
+        client = Client()
+        client.login(email='regular_emp@hrequest.com', password='TestPassword2026!')
+        res_term = client.post(reverse('employees:terminate', kwargs={'pk': self.employee.id}))
+        res_del = client.post(reverse('employees:delete', kwargs={'pk': self.employee.id}))
+        self.assertEqual(res_term.status_code, 403)
+        self.assertEqual(res_del.status_code, 403)
+
+    def test_hr_admin_can_delete_employee(self):
+        client = Client()
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
+        emp_id = self.employee.id
+        user_id = self.employee.user_id
+        res = client.post(reverse('employees:delete', kwargs={'pk': emp_id}))
+        self.assertRedirects(res, reverse('employees:list'))
+        self.assertFalse(Employee.objects.filter(id=emp_id).exists())
+        self.assertFalse(CustomUser.objects.filter(id=user_id).exists())
+
+    def test_one_time_team_seed_runs_once_and_preserves_deletions(self):
+        from django.core.management import call_command
+        from apps.attendance.models import Attendance
+        from apps.payslips.models import PayslipRecord
+        from apps.requests.models import DocumentRequest
+
+        call_command('seed_team_members')
+        aux = Employee.objects.filter(user__email='auxtero.rivic@hrequest.com').first()
+        self.assertIsNotNone(aux)
+        self.assertGreaterEqual(Attendance.objects.filter(employee=aux).count(), 15)
+        self.assertEqual(PayslipRecord.objects.filter(employee=aux).count(), 3)
+        self.assertEqual(DocumentRequest.objects.filter(employee=aux).count(), 2)
+        self.assertFalse(Employee.objects.filter(first_name__icontains='John Anthony').exists())
+
+        # Delete one employee, then re-run seed: should NOT re-create!
+        aux.user.delete()
+        call_command('seed_team_members')
+        self.assertFalse(Employee.objects.filter(user__email='auxtero.rivic@hrequest.com').exists())
+

@@ -116,6 +116,29 @@
                                         <i class="bi bi-person me-2"></i>View Profile
                                     </a>
                                 </li>
+                                {% if request.user.is_superuser or request.user.role == 'HR_ADMIN' or request.user.role == 'SUPER_ADMIN' %}
+                                    {% if emp.user_id != request.user.id %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    {% if emp.status != 'TERMINATED' %}
+                                    <li>
+                                        <form method="post" action="{% url 'employees:terminate' emp.id %}" onsubmit="return confirm('Terminate (fire) {{ emp.full_name }}? Their login access will be disabled while keeping historical records.');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-warning">
+                                                <i class="bi bi-person-x me-2"></i>Terminate / Fire
+                                            </button>
+                                        </form>
+                                    </li>
+                                    {% endif %}
+                                    <li>
+                                        <form method="post" action="{% url 'employees:delete' emp.id %}" onsubmit="return confirm('PERMANENTLY DELETE {{ emp.full_name }} and all their records? This cannot be undone.');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-trash me-2"></i>Delete Employee
+                                            </button>
+                                        </form>
+                                    </li>
+                                    {% endif %}
+                                {% endif %}
                             </ul>
                         </div>
                     </td>

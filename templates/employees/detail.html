@@ -37,6 +37,29 @@
                 {% endif %}
                 <div><i class="bi bi-geo-alt me-2 text-primary"></i>{{ employee.get_work_location_display }}</div>
             </div>
+
+            {% if request.user.is_superuser or request.user.role == 'HR_ADMIN' or request.user.role == 'SUPER_ADMIN' %}
+                {% if employee.user_id != request.user.id %}
+                <hr class="my-3">
+                <div class="d-grid gap-2">
+                    {% if employee.status != 'TERMINATED' %}
+                    <form method="post" action="{% url 'employees:terminate' employee.id %}" onsubmit="return confirm('Terminate (fire) {{ employee.full_name }}? Their login access will be disabled while keeping historical records.');">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{% url 'employees:detail' employee.id %}">
+                        <button type="submit" class="btn btn-outline-warning btn-sm w-100 fw-semibold">
+                            <i class="bi bi-person-x me-1"></i> Terminate / Fire Employee
+                        </button>
+                    </form>
+                    {% endif %}
+                    <form method="post" action="{% url 'employees:delete' employee.id %}" onsubmit="return confirm('PERMANENTLY DELETE {{ employee.full_name }} and all their records? This cannot be undone.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100 fw-semibold">
+                            <i class="bi bi-trash me-1"></i> Delete Employee Permanently
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            {% endif %}
         </div>
     </div>
 
