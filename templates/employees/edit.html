@@ -51,9 +51,9 @@
                 {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
             </div>
             <div class="col-md-4">
-                <label class="form-label fw-semibold small text-secondary" for="{{ form.employee_id_number.id_for_label }}">Employee ID # <span class="text-danger">*</span></label>
-                {{ form.employee_id_number }}
-                {% if form.employee_id_number.errors %}<div class="text-danger small mt-1">{{ form.employee_id_number.errors.0 }}</div>{% endif %}
+                <label class="form-label fw-semibold small text-secondary">Employee ID #</label>
+                <input type="text" class="form-control bg-light text-muted" value="{{ employee.employee_id_number }}" disabled readonly>
+                <div class="form-text small text-muted">Permanent ID (locked for audit &amp; payroll integrity)</div>
             </div>
             <div class="col-md-4">
                 <label class="form-label fw-semibold small text-secondary" for="{{ form.work_email.id_for_label }}">Company Login Email <span class="text-danger">*</span></label>

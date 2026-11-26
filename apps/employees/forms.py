@@ -123,7 +123,6 @@ class EmployeeEditForm(forms.ModelForm):
     class Meta:
         model = Employee
         fields = [
-            'employee_id_number',
             'first_name',
             'middle_name',
             'last_name',
@@ -141,7 +140,6 @@ class EmployeeEditForm(forms.ModelForm):
             'emergency_contact_phone',
         ]
         widgets = {
-            'employee_id_number': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'middle_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),

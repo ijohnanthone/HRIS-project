@@ -187,7 +187,7 @@ class EmployeeModelAndViewsTests(TestCase):
         client = Client()
         client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
         res = client.post(reverse('employees:edit', kwargs={'pk': self.employee.id}), {
-            'employee_id_number': 'EMP-001',
+            'employee_id_number': 'HACKED-999',
             'first_name': 'Jonathan',
             'middle_name': 'M',
             'last_name': 'Doe',
@@ -203,6 +203,7 @@ class EmployeeModelAndViewsTests(TestCase):
         self.assertRedirects(res, reverse('employees:detail', kwargs={'pk': self.employee.id}))
         self.employee.refresh_from_db()
         self.employee.user.refresh_from_db()
+        self.assertEqual(self.employee.employee_id_number, 'EMP-001')
         self.assertEqual(self.employee.first_name, 'Jonathan')
         self.assertEqual(self.employee.work_location, 'Manila Site')
         self.assertEqual(self.employee.user.email, 'john.doe@hrequest.com')
