@@ -154,6 +154,21 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
             messages.error(request, "No employee profile is linked to this account.")
             return redirect('accounts:profile')
 
+        action = request.POST.get('action', 'contact')
+        if action == 'avatar':
+            avatar_data = request.POST.get('avatar_data', '').strip()
+            if avatar_data == 'REMOVE':
+                emp.avatar_data = ''
+                emp.save(update_fields=['avatar_data'])
+                messages.success(request, "Profile picture removed.")
+            elif avatar_data.startswith('data:image/') and len(avatar_data) < 600000:
+                emp.avatar_data = avatar_data
+                emp.save(update_fields=['avatar_data'])
+                messages.success(request, "Profile picture updated successfully!")
+            else:
+                messages.error(request, "Invalid or oversized image. Please choose a smaller photo.")
+            return redirect('accounts:profile')
+
         form = EmployeeContactSelfServiceForm(request.POST)
         if form.is_valid():
             emp.phone_number = form.cleaned_data['phone_number']

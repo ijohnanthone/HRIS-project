@@ -110,9 +110,13 @@
     <!-- Pinned User Card at Bottom of Sidebar -->
     <div class="sidebar-user">
         <div class="sidebar-user-info">
+            {% if user.employee_profile and user.employee_profile.avatar_url %}
+            <img src="{{ user.employee_profile.avatar_url }}" alt="{{ user.display_name }}" class="sidebar-user-avatar" style="object-fit: cover;">
+            {% else %}
             <div class="sidebar-user-avatar">
                 {{ user.display_name|slice:":1"|upper }}
             </div>
+            {% endif %}
             <div class="sidebar-user-details">
                 <div class="sidebar-user-name">{{ user.display_name }}</div>
                 <div class="sidebar-user-role">{{ user.get_role_display }}</div>

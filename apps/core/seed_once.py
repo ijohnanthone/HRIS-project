@@ -6,14 +6,15 @@ _TEAM_SEED_CHECKED = False
 
 def ensure_team_seed_once():
     """
-    Runs the one-time team member seed at most once per database.
-    Uses AuditLog action 'ONE_TIME_TEAM_SEED_V1' as a permanent DB marker
-    so deleted or modified employees are never re-created.
+    Ensures pending migrations are applied and runs the one-time team member seed
+    at most once per database. Uses AuditLog action 'ONE_TIME_TEAM_SEED_V1' as a
+    permanent DB marker so deleted or modified employees are never re-created.
     """
     global _TEAM_SEED_CHECKED
     if _TEAM_SEED_CHECKED or 'test' in sys.argv:
         return
     try:
+        call_command('migrate', '--noinput', verbosity=0)
         from apps.core.models import AuditLog
         if not AuditLog.objects.filter(action='ONE_TIME_TEAM_SEED_V1').exists():
             call_command('seed_team_members')

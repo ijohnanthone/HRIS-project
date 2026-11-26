@@ -19,10 +19,14 @@
     <!-- Left Column: Avatar & Summary -->
     <div class="col-lg-4 col-md-5 mb-4">
         <div class="card-hr text-center p-4">
+            {% if employee.avatar_url %}
+            <img src="{{ employee.avatar_url }}" alt="{{ employee.full_name }}" class="rounded-circle mx-auto mb-3 border shadow-sm" style="width: 90px; height: 90px; object-fit: cover;">
+            {% else %}
             <div class="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold mx-auto mb-3" 
                  style="width: 90px; height: 90px; background-color: var(--hr-corporate-blue); font-size: 2.2rem;">
                 {{ employee.initials }}
             </div>
+            {% endif %}
             <h4 class="fw-bold mb-1">{{ employee.full_name }}</h4>
             <p class="text-primary fw-medium mb-1">{{ employee.position.title }}</p>
             <p class="text-muted small mb-3">ID: <code>{{ employee.employee_id_number }}</code></p>

@@ -89,6 +89,7 @@ class Employee(models.Model):
     emergency_contact_phone = models.CharField(_('emergency contact phone'), max_length=30, blank=True)
 
     avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True)
+    avatar_data = models.TextField(_('profile picture data'), blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -111,6 +112,17 @@ class Employee(models.Model):
         f = self.first_name[:1] if self.first_name else ''
         l = self.last_name[:1] if self.last_name else ''
         return f"{f}{l}".upper() or 'EM'
+
+    @property
+    def avatar_url(self):
+        if self.avatar_data:
+            return self.avatar_data
+        if self.avatar:
+            try:
+                return self.avatar.url
+            except Exception:
+                return ''
+        return ''
 
     @property
     def status_badge_class(self):

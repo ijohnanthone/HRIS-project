@@ -167,3 +167,38 @@ class AuthenticationViewsTests(TestCase):
         self.assertRedirects(res, reverse('accounts:profile'))
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password('NewSecurePass2026!'))
+
+    def test_employee_can_upload_and_remove_avatar_data(self):
+        import datetime
+        from apps.organizations.models import Department, Position
+        from apps.employees.models import Employee
+
+        dept = Department.objects.create(name='HR', code='HR-AV1')
+        pos = Position.objects.create(title='Specialist', code='SPEC-AV1', department=dept)
+        emp = Employee.objects.create(
+            user=self.user,
+            employee_id_number='EMP-AV-1',
+            first_name='Avatar',
+            last_name='Tester',
+            department=dept,
+            position=pos,
+            hire_date=datetime.date(2025, 1, 1),
+        )
+        self.client.login(email='employee@hrequest.com', password='TestPassword2026!')
+        sample_uri = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2w=='
+        res = self.client.post(reverse('accounts:profile'), {
+            'action': 'avatar',
+            'avatar_data': sample_uri,
+        })
+        self.assertRedirects(res, reverse('accounts:profile'))
+        emp.refresh_from_db()
+        self.assertEqual(emp.avatar_data, sample_uri)
+        self.assertEqual(emp.avatar_url, sample_uri)
+
+        res_rem = self.client.post(reverse('accounts:profile'), {
+            'action': 'avatar',
+            'avatar_data': 'REMOVE',
+        })
+        self.assertRedirects(res_rem, reverse('accounts:profile'))
+        emp.refresh_from_db()
+        self.assertEqual(emp.avatar_data, '')

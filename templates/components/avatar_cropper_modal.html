@@ -1,0 +1,205 @@
+<!-- Reusable Adjustable / Adaptable Profile Picture Cropper Modal -->
+<div class="modal fade" id="avatarCropperModal" tabindex="-1" aria-labelledby="avatarCropperLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold" id="avatarCropperLabel">
+                    <i class="bi bi-crop text-primary me-2"></i>Adjust Profile Picture
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <div class="mb-3">
+                    <label class="btn btn-outline-primary btn-sm fw-semibold px-3" for="avatarFileInput">
+                        <i class="bi bi-upload me-1"></i> Choose Photo
+                    </label>
+                    <input type="file" id="avatarFileInput" accept="image/*" class="d-none">
+                </div>
+
+                <div class="position-relative mx-auto mb-3 d-flex align-items-center justify-content-center bg-light rounded-circle border shadow-sm overflow-hidden"
+                     style="width: 240px; height: 240px; touch-action: none; cursor: grab;" id="avatarCanvasWrap">
+                    <canvas id="avatarCropCanvas" width="240" height="240"></canvas>
+                </div>
+
+                <div class="text-muted small mb-2" id="avatarHintText">
+                    <i class="bi bi-arrows-move me-1"></i> Drag photo to reposition &bull; Use slider to zoom
+                </div>
+
+                <div class="d-flex align-items-center gap-3 px-3 mb-2">
+                    <i class="bi bi-zoom-out text-muted"></i>
+                    <input type="range" class="form-range" id="avatarZoomRange" min="1" max="3" step="0.02" value="1">
+                    <i class="bi bi-zoom-in text-muted"></i>
+                </div>
+            </div>
+            <div class="modal-footer border-top justify-content-between">
+                <button type="button" class="btn btn-light border btn-sm" id="avatarResetBtn">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light border btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm fw-semibold px-3" id="avatarApplyBtn" disabled>
+                        <i class="bi bi-check-lg me-1"></i> Apply Photo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const fileInput = document.getElementById('avatarFileInput');
+    const canvas = document.getElementById('avatarCropCanvas');
+    const zoomRange = document.getElementById('avatarZoomRange');
+    const resetBtn = document.getElementById('avatarResetBtn');
+    const applyBtn = document.getElementById('avatarApplyBtn');
+    if (!fileInput || !canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const SIZE = 240;
+    let img = null;
+    let baseScale = 1;
+    let zoom = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function drawPlaceholder() {
+        ctx.clearRect(0, 0, SIZE, SIZE);
+        ctx.fillStyle = '#F1F5F9';
+        ctx.fillRect(0, 0, SIZE, SIZE);
+        ctx.fillStyle = '#64748B';
+        ctx.font = '500 13px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Select a photo above', SIZE / 2, SIZE / 2);
+    }
+
+    function clampOffsets() {
+        if (!img) return;
+        const scale = baseScale * zoom;
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const maxDx = Math.max(0, (w - SIZE) / 2);
+        const maxDy = Math.max(0, (h - SIZE) / 2);
+        offsetX = Math.max(-maxDx, Math.min(maxDx, offsetX));
+        offsetY = Math.max(-maxDy, Math.min(maxDy, offsetY));
+    }
+
+    function render() {
+        if (!img) {
+            drawPlaceholder();
+            return;
+        }
+        clampOffsets();
+        ctx.clearRect(0, 0, SIZE, SIZE);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, SIZE, SIZE);
+        const scale = baseScale * zoom;
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const x = (SIZE - w) / 2 + offsetX;
+        const y = (SIZE - h) / 2 + offsetY;
+        ctx.drawImage(img, x, y, w, h);
+    }
+
+    function resetTransform() {
+        if (!img) return;
+        baseScale = Math.max(SIZE / img.width, SIZE / img.height);
+        zoom = 1;
+        offsetX = 0;
+        offsetY = 0;
+        zoomRange.value = '1';
+        render();
+    }
+
+    fileInput.addEventListener('change', function (e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+            const loaded = new Image();
+            loaded.onload = function () {
+                img = loaded;
+                applyBtn.disabled = false;
+                resetTransform();
+            };
+            loaded.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    zoomRange.addEventListener('input', function () {
+        zoom = parseFloat(zoomRange.value) || 1;
+        render();
+    });
+
+    resetBtn.addEventListener('click', resetTransform);
+
+    function startDrag(clientX, clientY) {
+        if (!img) return;
+        dragging = true;
+        lastX = clientX;
+        lastY = clientY;
+        canvas.parentElement.style.cursor = 'grabbing';
+    }
+
+    function moveDrag(clientX, clientY) {
+        if (!dragging) return;
+        offsetX += clientX - lastX;
+        offsetY += clientY - lastY;
+        lastX = clientX;
+        lastY = clientY;
+        render();
+    }
+
+    function endDrag() {
+        dragging = false;
+        canvas.parentElement.style.cursor = 'grab';
+    }
+
+    canvas.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
+    window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+    window.addEventListener('mouseup', endDrag);
+
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) startDrag(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    canvas.addEventListener('touchmove', (e) => {
+        if (dragging && e.touches.length === 1) {
+            e.preventDefault();
+            moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }
+    }, { passive: false });
+    canvas.addEventListener('touchend', endDrag);
+
+    applyBtn.addEventListener('click', function () {
+        if (!img) return;
+        const out = document.createElement('canvas');
+        out.width = 256;
+        out.height = 256;
+        const octx = out.getContext('2d');
+        octx.fillStyle = '#FFFFFF';
+        octx.fillRect(0, 0, 256, 256);
+        const factor = 256 / SIZE;
+        const scale = baseScale * zoom * factor;
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const x = (256 - w) / 2 + (offsetX * factor);
+        const y = (256 - h) / 2 + (offsetY * factor);
+        octx.drawImage(img, x, y, w, h);
+
+        const dataUrl = out.toDataURL('image/jpeg', 0.85);
+        window.dispatchEvent(new CustomEvent('hrequest:avatarCropped', { detail: { dataUrl } }));
+
+        const modalEl = document.getElementById('avatarCropperModal');
+        if (modalEl && window.bootstrap) {
+            const inst = window.bootstrap.Modal.getInstance(modalEl);
+            if (inst) inst.hide();
+        }
+    });
+
+    drawPlaceholder();
+})();
+</script>

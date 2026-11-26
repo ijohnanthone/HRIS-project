@@ -138,8 +138,10 @@ class EmployeeEditForm(forms.ModelForm):
             'personal_email',
             'emergency_contact_name',
             'emergency_contact_phone',
+            'avatar_data',
         ]
         widgets = {
+            'avatar_data': forms.HiddenInput(attrs={'id': 'id_avatar_data'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'middle_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
