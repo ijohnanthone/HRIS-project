@@ -17,6 +17,7 @@ from .forms import (
     OnboardingStep2Form,
     OnboardingStep3Form,
     OnboardingStep4Form,
+    EmployeeEditForm,
 )
 
 class EmployeeListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
@@ -353,3 +354,48 @@ class EmployeeDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
 
         messages.success(request, f"Employee {emp_name} ({emp_id_num}) has been permanently deleted from the system.")
         return redirect('employees:list')
+
+
+class EmployeeUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
+    """
+    Allows HR Admin, HR Staff, and Super Admin to edit an employee's profile
+    (e.g., fix name typos, update work location/site, department, position, or contact details).
+    """
+    allowed_roles = ['SUPER_ADMIN', 'HR_ADMIN', 'HR_STAFF']
+    template_name = 'employees/edit.html'
+
+    def get(self, request, pk, *args, **kwargs):
+        emp = get_object_or_404(Employee.objects.select_related('user', 'department', 'position'), pk=pk)
+        form = EmployeeEditForm(instance=emp)
+        return render(request, self.template_name, {'form': form, 'employee': emp})
+
+    def post(self, request, pk, *args, **kwargs):
+        emp = get_object_or_404(Employee.objects.select_related('user', 'department', 'position'), pk=pk)
+        form = EmployeeEditForm(request.POST, instance=emp)
+        if form.is_valid():
+            from apps.core.models import AuditLog
+            with transaction.atomic():
+                updated_emp = form.save()
+                new_email = form.cleaned_data['work_email']
+                if updated_emp.user.email != new_email:
+                    updated_emp.user.email = new_email
+                    updated_emp.user.save(update_fields=['email'])
+
+                # Sync active user status if HR changed employment status to/from TERMINATED
+                should_be_active = updated_emp.status != EmployeeStatus.TERMINATED
+                if updated_emp.user.is_active != should_be_active:
+                    updated_emp.user.is_active = should_be_active
+                    updated_emp.user.save(update_fields=['is_active'])
+
+                AuditLog.objects.create(
+                    actor=request.user,
+                    action='EMPLOYEE_UPDATED',
+                    model_name='Employee',
+                    object_id=str(updated_emp.id),
+                    changes={'details': f"Updated profile for {updated_emp.full_name} (ID: {updated_emp.employee_id_number})."}
+                )
+
+            messages.success(request, f"Profile for {updated_emp.full_name} has been updated.")
+            return redirect('employees:detail', pk=updated_emp.id)
+
+        return render(request, self.template_name, {'form': form, 'employee': emp})

@@ -112,3 +112,64 @@ class OnboardingStep4Form(forms.Form):
         if Employee.objects.filter(employee_id_number=id_num).exists():
             raise forms.ValidationError(_("An employee with this ID number already exists."))
         return id_num
+
+
+class EmployeeEditForm(forms.ModelForm):
+    work_email = forms.EmailField(
+        label=_("Company Login Email"),
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = Employee
+        fields = [
+            'employee_id_number',
+            'first_name',
+            'middle_name',
+            'last_name',
+            'department',
+            'position',
+            'employment_type',
+            'status',
+            'work_location',
+            'hire_date',
+            'probation_end_date',
+            'birth_date',
+            'phone_number',
+            'personal_email',
+            'emergency_contact_name',
+            'emergency_contact_phone',
+        ]
+        widgets = {
+            'employee_id_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'middle_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'department': forms.Select(attrs={'class': 'form-select'}),
+            'position': forms.Select(attrs={'class': 'form-select'}),
+            'employment_type': forms.Select(attrs={'class': 'form-select'}),
+            'status': forms.Select(attrs={'class': 'form-select'}),
+            'work_location': forms.Select(attrs={'class': 'form-select'}),
+            'hire_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'probation_end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'birth_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'personal_email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'emergency_contact_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'emergency_contact_phone': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['position'].queryset = Position.objects.filter(is_active=True)
+        if self.instance and self.instance.pk and self.instance.user:
+            self.fields['work_email'].initial = self.instance.user.email
+
+    def clean_work_email(self):
+        email = self.cleaned_data.get('work_email', '').strip().lower()
+        qs = CustomUser.objects.filter(email__iexact=email)
+        if self.instance and self.instance.pk and self.instance.user_id:
+            qs = qs.exclude(pk=self.instance.user_id)
+        if qs.exists():
+            raise forms.ValidationError(_("Another user account already uses this login email."))
+        return email

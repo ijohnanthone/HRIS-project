@@ -183,3 +183,33 @@ class EmployeeModelAndViewsTests(TestCase):
         call_command('seed_team_members')
         self.assertFalse(Employee.objects.filter(user__email='auxtero.rivic@hrequest.com').exists())
 
+    def test_hr_admin_can_edit_employee_profile(self):
+        client = Client()
+        client.login(email='hr_admin@hrequest.com', password='TestPassword2026!')
+        res = client.post(reverse('employees:edit', kwargs={'pk': self.employee.id}), {
+            'employee_id_number': 'EMP-001',
+            'first_name': 'Jonathan',
+            'middle_name': 'M',
+            'last_name': 'Doe',
+            'work_email': 'john.doe@hrequest.com',
+            'department': self.dept.id,
+            'position': self.pos.id,
+            'employment_type': EmploymentType.FULL_TIME,
+            'status': EmployeeStatus.ACTIVE,
+            'work_location': 'Manila Site',
+            'hire_date': '2024-01-01',
+            'phone_number': '+63 917 123 4567',
+        })
+        self.assertRedirects(res, reverse('employees:detail', kwargs={'pk': self.employee.id}))
+        self.employee.refresh_from_db()
+        self.employee.user.refresh_from_db()
+        self.assertEqual(self.employee.first_name, 'Jonathan')
+        self.assertEqual(self.employee.work_location, 'Manila Site')
+        self.assertEqual(self.employee.user.email, 'john.doe@hrequest.com')
+
+    def test_regular_employee_cannot_edit_employee_profile(self):
+        client = Client()
+        client.login(email='regular_emp@hrequest.com', password='TestPassword2026!')
+        res = client.get(reverse('employees:edit', kwargs={'pk': self.employee.id}))
+        self.assertEqual(res.status_code, 403)
+

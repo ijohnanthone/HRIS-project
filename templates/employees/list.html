@@ -116,6 +116,11 @@
                                         <i class="bi bi-person me-2"></i>View Profile
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'employees:edit' emp.id %}">
+                                        <i class="bi bi-pencil-square me-2 text-primary"></i>Edit Profile
+                                    </a>
+                                </li>
                                 {% if request.user.is_superuser or request.user.role == 'HR_ADMIN' or request.user.role == 'SUPER_ADMIN' %}
                                     {% if emp.user_id != request.user.id %}
                                     <li><hr class="dropdown-divider"></li>
