@@ -601,3 +601,43 @@ a:hover {
         font-size: 0.825rem;
     }
 }
+
+/* ==========================================================================
+   Floating Auto-Dismiss Toast Notifications
+   ========================================================================== */
+.hr-toast-container {
+    position: fixed;
+    top: 1.15rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    width: min(92vw, 480px);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    pointer-events: none;
+}
+
+.hr-toast-alert {
+    pointer-events: auto;
+    border-radius: var(--hr-radius);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+    animation: hrToastSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.hr-toast-alert.hr-toast-hiding {
+    opacity: 0;
+    transform: translateY(-14px);
+}
+
+@keyframes hrToastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -18,6 +18,29 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Global Floating Toast Notifications (Login, Logout, Actions) -->
+    {% if messages %}
+    <div class="hr-toast-container" id="hrToastContainer">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'info' %}info{% elif message.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show mb-0 hr-toast-alert" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                {% if message.tags == 'error' %}
+                    <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                {% elif message.tags == 'info' %}
+                    <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                {% else %}
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                {% endif %}
+                <div class="fw-medium small">{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% if user.is_authenticated %}
     <div class="app-wrapper">
         <!-- Mobile Sidebar Backdrop -->
@@ -33,27 +56,6 @@
 
             <!-- Page Body Content -->
             <main class="main-content">
-                <!-- System Messages / Alerts -->
-                {% if messages %}
-                <div class="container-fluid px-0 mb-4">
-                    {% for message in messages %}
-                    <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'info' %}info{% elif message.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show shadow-sm" role="alert">
-                        <div class="d-flex align-items-center gap-2">
-                            {% if message.tags == 'error' %}
-                                <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
-                            {% elif message.tags == 'warning' %}
-                                <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
-                            {% else %}
-                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                            {% endif %}
-                            <div>{{ message }}</div>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
                 {% block content %}{% endblock %}
             </main>
         </div>
@@ -86,6 +88,24 @@
             if (toggleBtn) toggleBtn.addEventListener('click', openMenu);
             if (closeBtn) closeBtn.addEventListener('click', closeMenu);
             backdrop.addEventListener('click', closeMenu);
+        })();
+    </script>
+
+    <!-- Auto-Dismiss Toast Notifications -->
+    <script>
+        (function () {
+            const toasts = document.querySelectorAll('.hr-toast-alert');
+            toasts.forEach(function (toast, idx) {
+                const delay = 3500 + (idx * 350);
+                setTimeout(function () {
+                    toast.classList.add('hr-toast-hiding');
+                    setTimeout(function () {
+                        if (toast && toast.parentNode) {
+                            toast.remove();
+                        }
+                    }, 420);
+                }, delay);
+            });
         })();
     </script>
 
