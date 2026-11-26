@@ -126,3 +126,33 @@ class AuthenticationViewsTests(TestCase):
         self.client.login(email='employee@hrequest.com', password='TestPassword2026!')
         response = self.client.get(reverse('accounts:logout'))
         self.assertRedirects(response, reverse('accounts:login'))
+
+    def test_employee_can_update_own_contact_info(self):
+        import datetime
+        from apps.organizations.models import Department, Position
+        from apps.employees.models import Employee
+
+        dept = Department.objects.create(name='IT', code='IT-01')
+        pos = Position.objects.create(title='Developer', code='DEV-01', department=dept)
+        emp = Employee.objects.create(
+            user=self.user,
+            employee_id_number='EMP-SELF-1',
+            first_name='Self',
+            last_name='User',
+            department=dept,
+            position=pos,
+            hire_date=datetime.date(2025, 1, 1),
+        )
+        self.client.login(email='employee@hrequest.com', password='TestPassword2026!')
+        res = self.client.post(reverse('accounts:profile'), {
+            'phone_number': '+63 917 888 9999',
+            'personal_email': 'self.personal@example.com',
+            'emergency_contact_name': 'Maria User',
+            'emergency_contact_phone': '+63 917 777 6666',
+        })
+        self.assertRedirects(res, reverse('accounts:profile'))
+        emp.refresh_from_db()
+        self.assertEqual(emp.phone_number, '+63 917 888 9999')
+        self.assertEqual(emp.personal_email, 'self.personal@example.com')
+        self.assertEqual(emp.emergency_contact_name, 'Maria User')
+        self.assertEqual(emp.emergency_contact_phone, '+63 917 777 6666')

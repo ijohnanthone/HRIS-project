@@ -58,6 +58,36 @@ class EmailAuthenticationForm(forms.Form):
     def get_user(self):
         return self.user_cache
 
+
+class EmployeeContactSelfServiceForm(forms.Form):
+    """
+    Allows employees to update only their personal contact & emergency details
+    without modifying HR-controlled official employment records.
+    """
+    phone_number = forms.CharField(
+        label=_("Contact Phone"),
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+63 917 000 0000'})
+    )
+    personal_email = forms.EmailField(
+        label=_("Personal Email"),
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'personal@example.com'})
+    )
+    emergency_contact_name = forms.CharField(
+        label=_("Emergency Contact Name"),
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full name'})
+    )
+    emergency_contact_phone = forms.CharField(
+        label=_("Emergency Contact Phone"),
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+63 917 000 0000'})
+    )
+
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser

@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Count, Q
-from .forms import EmailAuthenticationForm
+from .forms import EmailAuthenticationForm, EmployeeContactSelfServiceForm
 from .models import CustomUser, UserRole
 from apps.core.seed_once import ensure_team_seed_once
 
@@ -131,7 +131,42 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 class UserProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/profile.html'
 
+    def _get_employee(self):
+        return getattr(self.request.user, 'employee_profile', None)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['user'] = self.request.user
+        emp = self._get_employee()
+        context['employee'] = emp
+        if emp and 'contact_form' not in kwargs:
+            context['contact_form'] = EmployeeContactSelfServiceForm(initial={
+                'phone_number': emp.phone_number,
+                'personal_email': emp.personal_email,
+                'emergency_contact_name': emp.emergency_contact_name,
+                'emergency_contact_phone': emp.emergency_contact_phone,
+            })
         return context
+
+    def post(self, request, *args, **kwargs):
+        emp = self._get_employee()
+        if not emp:
+            messages.error(request, "No employee profile is linked to this account.")
+            return redirect('accounts:profile')
+
+        form = EmployeeContactSelfServiceForm(request.POST)
+        if form.is_valid():
+            emp.phone_number = form.cleaned_data['phone_number']
+            emp.personal_email = form.cleaned_data['personal_email']
+            emp.emergency_contact_name = form.cleaned_data['emergency_contact_name']
+            emp.emergency_contact_phone = form.cleaned_data['emergency_contact_phone']
+            emp.save(update_fields=[
+                'phone_number',
+                'personal_email',
+                'emergency_contact_name',
+                'emergency_contact_phone',
+            ])
+            messages.success(request, "Your personal contact information has been updated.")
+            return redirect('accounts:profile')
+
+        return self.render_to_response(self.get_context_data(contact_form=form))
