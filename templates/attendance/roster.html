@@ -137,55 +137,6 @@
                         </button>
                     </td>
                 </tr>
-
-                <!-- Manual Correction Modal for Row -->
-                <div class="modal fade" id="editModal{{ att.id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <form method="post" action="{% url 'attendance:manual_correction' att.id %}" class="modal-content">
-                            {% csrf_token %}
-                            <div class="modal-header">
-                                <h5 class="modal-title fw-bold">
-                                    <i class="bi bi-pencil-square text-primary me-2"></i>Adjust Attendance
-                                </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body text-start">
-                                <div class="mb-3">
-                                    <label class="form-label small fw-semibold text-muted">Employee</label>
-                                    <input type="text" class="form-control" value="{{ att.employee.full_name }} ({{ att.date }})" disabled>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-6">
-                                        <label class="form-label small fw-semibold text-muted">Clock In Time</label>
-                                        <input type="datetime-local" name="clock_in" class="form-control" 
-                                               value="{% if att.clock_in %}{{ att.clock_in|date:'Y-m-d\TH:i' }}{% endif %}">
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label small fw-semibold text-muted">Clock Out Time</label>
-                                        <input type="datetime-local" name="clock_out" class="form-control" 
-                                               value="{% if att.clock_out %}{{ att.clock_out|date:'Y-m-d\TH:i' }}{% endif %}">
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label small fw-semibold text-muted">Status</label>
-                                    <select name="status" class="form-select">
-                                        {% for s_val, s_lbl in statuses %}
-                                        <option value="{{ s_val }}" {% if att.status == s_val %}selected{% endif %}>{{ s_lbl }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label small fw-semibold text-muted">Audit Justification *</label>
-                                    <textarea name="correction_note" class="form-control" rows="3" required placeholder="Mandatory reason for audit record (e.g. system correction, employee punch fault, approved offsite)...">{{ att.correction_note }}</textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary fw-semibold">Save Adjustment</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
                 {% empty %}
                 <tr>
                     <td colspan="9" class="text-center py-5 text-muted">
@@ -214,4 +165,57 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Manual Correction Modals (rendered outside table for valid HTML & Bootstrap stacking) -->
+{% for att in attendances %}
+<div class="modal fade" id="editModal{{ att.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-white border-0 shadow-lg">
+            <form method="post" action="{% url 'attendance:manual_correction' att.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-pencil-square text-primary me-2"></i>Adjust Attendance
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Employee</label>
+                        <input type="text" class="form-control bg-light" value="{{ att.employee.full_name }} ({{ att.date }})" disabled>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label small fw-semibold text-muted">Clock In Time</label>
+                            <input type="datetime-local" name="clock_in" class="form-control"
+                                   value="{% if att.clock_in %}{{ att.clock_in|date:'Y-m-d\TH:i' }}{% endif %}">
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label small fw-semibold text-muted">Clock Out Time</label>
+                            <input type="datetime-local" name="clock_out" class="form-control"
+                                   value="{% if att.clock_out %}{{ att.clock_out|date:'Y-m-d\TH:i' }}{% endif %}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Status</label>
+                        <select name="status" class="form-select">
+                            {% for s_val, s_lbl in statuses %}
+                            <option value="{{ s_val }}" {% if att.status == s_val %}selected{% endif %}>{{ s_lbl }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-muted">Audit Justification <span class="text-danger">*</span></label>
+                        <textarea name="correction_note" class="form-control" rows="3" required placeholder="Mandatory reason for audit record (e.g. system correction, employee punch fault, approved offsite)...">{{ att.correction_note }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-semibold">Save Adjustment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

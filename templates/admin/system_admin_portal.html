@@ -192,58 +192,6 @@
                             </div>
                         </td>
                     </tr>
-
-                    <!-- Per-User Edit Role Modal -->
-                    <div class="modal fade" id="editRoleModal{{ u.id }}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <form method="post" action="{% url 'system_admin:user_update_role' u.id %}" class="modal-content text-start">
-                                {% csrf_token %}
-                                <div class="modal-header">
-                                    <h5 class="modal-title fw-bold">Change Role: {{ u.email }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <p class="small text-muted mb-3">
-                                        Assigning a new role grants or restricts access to administrative management modules.
-                                    </p>
-                                    <label class="form-label small fw-semibold text-secondary">Assign System Role *</label>
-                                    <select name="role" class="form-select mb-3">
-                                        {% for r_val, r_lbl in roles %}
-                                        <option value="{{ r_val }}" {% if u.role == r_val %}selected{% endif %}>{{ r_lbl }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary fw-semibold">Save Role Assignment</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Per-User Reset Password Modal -->
-                    <div class="modal fade" id="resetPasswordModal{{ u.id }}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <form method="post" action="{% url 'system_admin:user_reset_password' u.id %}" class="modal-content text-start">
-                                {% csrf_token %}
-                                <div class="modal-header">
-                                    <h5 class="modal-title fw-bold">Reset Password: {{ u.email }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <label class="form-label small fw-semibold text-secondary">Enter New Temporary Password *</label>
-                                    <input type="password" name="new_password" class="form-control" placeholder="Minimum 8 characters" required minlength="8">
-                                    <div class="form-text small text-muted mt-2">
-                                        The user will be required to log in with this new password on their next session.
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-warning fw-semibold">Update Password</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
                     {% empty %}
                     <tr>
                         <td colspan="6" class="text-center py-5 text-muted">
@@ -345,4 +293,61 @@
         </form>
     </div>
 </div>
+
+<!-- Per-User Modals (rendered outside table for valid HTML & Bootstrap stacking) -->
+{% for u in users %}
+<div class="modal fade" id="editRoleModal{{ u.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-white border-0 shadow-lg">
+            <form method="post" action="{% url 'system_admin:user_update_role' u.id %}" class="text-start">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Change Role: {{ u.email }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">
+                        Assigning a new role grants or restricts access to administrative management modules.
+                    </p>
+                    <label class="form-label small fw-semibold text-secondary">Assign System Role *</label>
+                    <select name="role" class="form-select mb-3">
+                        {% for r_val, r_lbl in roles %}
+                        <option value="{{ r_val }}" {% if u.role == r_val %}selected{% endif %}>{{ r_lbl }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-semibold">Save Role Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="resetPasswordModal{{ u.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-white border-0 shadow-lg">
+            <form method="post" action="{% url 'system_admin:user_reset_password' u.id %}" class="text-start">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Reset Password: {{ u.email }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label small fw-semibold text-secondary">Enter New Temporary Password *</label>
+                    <input type="password" name="new_password" class="form-control" placeholder="Minimum 8 characters" required minlength="8">
+                    <div class="form-text small text-muted mt-2">
+                        The user will be required to log in with this new password on their next session.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning fw-semibold">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}
