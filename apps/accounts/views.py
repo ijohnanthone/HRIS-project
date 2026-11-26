@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Count, Q
-from .forms import EmailAuthenticationForm, EmployeeContactSelfServiceForm
+from .forms import EmailAuthenticationForm, EmployeeContactSelfServiceForm, HRequestPasswordChangeForm
 from .models import CustomUser, UserRole
 from apps.core.seed_once import ensure_team_seed_once
 
@@ -170,3 +170,13 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
             return redirect('accounts:profile')
 
         return self.render_to_response(self.get_context_data(contact_form=form))
+
+
+class HRequestPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    form_class = HRequestPasswordChangeForm
+    template_name = 'accounts/password_change.html'
+    success_url = reverse_lazy('accounts:profile')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Your password has been updated successfully!")
+        return super().form_valid(form)

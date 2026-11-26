@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 from .models import CustomUser
@@ -87,6 +87,16 @@ class EmployeeContactSelfServiceForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+63 917 000 0000'})
     )
+
+
+class HRequestPasswordChangeForm(PasswordChangeForm):
+    """
+    Bootstrap-styled password change form for logged-in users.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:

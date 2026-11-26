@@ -156,3 +156,14 @@ class AuthenticationViewsTests(TestCase):
         self.assertEqual(emp.personal_email, 'self.personal@example.com')
         self.assertEqual(emp.emergency_contact_name, 'Maria User')
         self.assertEqual(emp.emergency_contact_phone, '+63 917 777 6666')
+
+    def test_user_can_change_password(self):
+        self.client.login(email='employee@hrequest.com', password='TestPassword2026!')
+        res = self.client.post(reverse('accounts:password_change'), {
+            'old_password': 'TestPassword2026!',
+            'new_password1': 'NewSecurePass2026!',
+            'new_password2': 'NewSecurePass2026!',
+        })
+        self.assertRedirects(res, reverse('accounts:profile'))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('NewSecurePass2026!'))
