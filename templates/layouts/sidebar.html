@@ -1,12 +1,17 @@
 {% load static %}
-<aside class="sidebar">
+<aside class="sidebar" id="appSidebar">
     <!-- Brand Header -->
-    <div class="sidebar-brand">
-        <img src="{% static 'brand/logo.png' %}" alt="HRequest Logo">
-        <div class="sidebar-brand-text">
-            <span class="sidebar-brand-name">HRequest</span>
-            <span class="sidebar-brand-sub">HRIS &bull; Est. 2026</span>
+    <div class="sidebar-brand justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <img src="{% static 'brand/logo.png' %}" alt="HRequest Logo">
+            <div class="sidebar-brand-text">
+                <span class="sidebar-brand-name">HRequest</span>
+                <span class="sidebar-brand-sub">HRIS &bull; Est. 2026</span>
+            </div>
         </div>
+        <button type="button" class="btn btn-link text-white p-1 d-lg-none" id="sidebarClose" aria-label="Close menu">
+            <i class="bi bi-x-lg fs-5"></i>
+        </button>
     </div>
 
     <!-- Navigation Menu -->

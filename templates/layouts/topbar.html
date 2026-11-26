@@ -1,5 +1,8 @@
 <header class="topbar">
-    <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2 gap-md-3 min-width-0">
+        <button type="button" class="btn btn-light border d-lg-none p-2 lh-1" id="sidebarToggle" aria-label="Open menu">
+            <i class="bi bi-list fs-5 text-primary"></i>
+        </button>
         <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
     </div>
 
@@ -49,7 +52,7 @@
         </div>
 
         <!-- Current User Role Badge -->
-        <span class="badge bg-light text-primary border px-3 py-2 fw-semibold">
+        <span class="badge bg-light text-primary border px-2 px-md-3 py-2 fw-semibold d-none d-sm-inline-flex align-items-center">
             <i class="bi bi-shield-check me-1"></i>{{ user.get_role_display }}
         </span>
     </div>
