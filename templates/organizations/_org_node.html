@@ -1,0 +1,31 @@
+<li>
+    <div class="org-node-card {% if 'chief' in node.employee.position.title|lower or 'ceo' in node.employee.position.title|lower %}org-node-exec{% elif node.is_head %}org-node-head{% endif %}">
+        <a href="{% url 'employees:detail' node.employee.id %}" class="text-decoration-none text-center d-flex flex-column align-items-center">
+            {% if node.employee.avatar_url %}
+            <img src="{{ node.employee.avatar_url }}" alt="{{ node.employee.full_name }}" class="org-node-avatar">
+            {% else %}
+            <div class="org-node-initials">{{ node.employee.initials }}</div>
+            {% endif %}
+            <div class="fw-bold text-dark small text-truncate" style="max-width: 185px;">{{ node.employee.full_name }}</div>
+            <div class="text-primary fw-medium" style="font-size: 0.76rem; max-width: 185px;">{{ node.employee.position.title }}</div>
+            <span class="badge bg-light text-secondary border mt-1" style="font-size: 0.68rem;">{{ node.employee.department.code }}</span>
+        </a>
+
+        {% if node.children %}
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm org-toggle-btn"
+                onclick="toggleOrgBranch(this)"
+                aria-expanded="true">
+            <i class="bi bi-dash-circle me-1"></i>{{ node.direct_count }} report{{ node.direct_count|pluralize }}
+        </button>
+        {% endif %}
+    </div>
+
+    {% if node.children %}
+    <ul class="org-children-list">
+        {% for child in node.children %}
+            {% include 'organizations/_org_node.html' with node=child %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+</li>

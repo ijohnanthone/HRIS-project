@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Organizational Chart | HRequest{% endblock %}
+{% block page_title %}Organizational Chart{% endblock %}
+
+{% block content %}
+{% include 'organizations/_nav_tabs.html' %}
+
+<div class="card-hr mb-4">
+    <div class="card-hr-body py-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <form method="get" class="d-flex flex-wrap align-items-center gap-2">
+            <label for="orgDeptFilter" class="small fw-semibold text-muted mb-0">Filter Department:</label>
+            <select id="orgDeptFilter" name="department" class="form-select form-select-sm" style="width: auto; min-width: 210px;" onchange="this.form.submit()">
+                <option value="">All Departments ({{ total_in_chart }})</option>
+                {% for d in departments %}
+                <option value="{{ d.id }}" {% if current_department == d.id|stringformat:'s' %}selected{% endif %}>{{ d.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-light border btn-sm" onclick="expandAllOrgNodes()">
+                <i class="bi bi-arrows-expand me-1"></i> Expand All
+            </button>
+            <button type="button" class="btn btn-light border btn-sm" onclick="collapseAllOrgNodes()">
+                <i class="bi bi-arrows-collapse me-1"></i> Collapse All
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card-hr">
+    <div class="card-hr-header">
+        <div>
+            <h5 class="card-hr-title"><i class="bi bi-diagram-3 text-primary me-2"></i>Reporting Hierarchy</h5>
+            <span class="small text-muted">Based on actual manager &amp; supervisor assignments. Click any employee to view details.</span>
+        </div>
+    </div>
+    <div class="org-chart-scroll">
+        {% if org_roots %}
+        <div class="org-tree">
+            <ul>
+                {% for root in org_roots %}
+                    {% include 'organizations/_org_node.html' with node=root %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-diagram-3 fs-1 d-block mb-2"></i>
+            No active employees found for this organizational view.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleOrgBranch(btn) {
+    const li = btn.closest('li');
+    if (!li) return;
+    const ul = li.querySelector(':scope > ul.org-children-list');
+    if (!ul) return;
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    if (expanded) {
+        ul.style.display = 'none';
+        btn.setAttribute('aria-expanded', 'false');
+        btn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>' + btn.textContent.trim();
+    } else {
+        ul.style.display = 'flex';
+        btn.setAttribute('aria-expanded', 'true');
+        btn.innerHTML = '<i class="bi bi-dash-circle me-1"></i>' + btn.textContent.trim();
+    }
+}
+
+function expandAllOrgNodes() {
+    document.querySelectorAll('.org-children-list').forEach(ul => { ul.style.display = 'flex'; });
+    document.querySelectorAll('.org-toggle-btn').forEach(btn => {
+        btn.setAttribute('aria-expanded', 'true');
+        btn.innerHTML = '<i class="bi bi-dash-circle me-1"></i>' + btn.textContent.trim();
+    });
+}
+
+function collapseAllOrgNodes() {
+    document.querySelectorAll('.org-children-list').forEach(ul => { ul.style.display = 'none'; });
+    document.querySelectorAll('.org-toggle-btn').forEach(btn => {
+        btn.setAttribute('aria-expanded', 'false');
+        btn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>' + btn.textContent.trim();
+    });
+}
+</script>
+{% endblock %}

@@ -722,3 +722,273 @@ a:hover {
         transform: translateY(0);
     }
 }
+
+/* ==========================================================================
+   Organization Module (Overview, Department Detail, Org Chart, Directory)
+   ========================================================================== */
+.org-segmented-nav {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    background: #FFFFFF;
+    border: 1px solid var(--hr-border);
+    padding: 0.35rem;
+    border-radius: var(--hr-radius);
+    box-shadow: var(--hr-shadow-sm);
+}
+.org-seg-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--hr-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--hr-text-muted);
+    transition: all 0.18s ease;
+    text-decoration: none;
+}
+.org-seg-link:hover {
+    color: var(--hr-corporate-blue);
+    background: var(--hr-cloud-white);
+}
+.org-seg-link.active {
+    background: var(--hr-corporate-blue);
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(23, 79, 145, 0.22);
+}
+
+/* Department Overview Card */
+.dept-overview-card {
+    background: #FFFFFF;
+    border: 1px solid var(--hr-border);
+    border-radius: var(--hr-radius);
+    padding: 1.35rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    text-decoration: none;
+    color: inherit;
+}
+.dept-overview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hr-shadow-lg);
+    border-color: var(--hr-sky-blue);
+    color: inherit;
+}
+
+/* Overlapping Avatar Stack */
+.avatar-stack {
+    display: flex;
+    align-items: center;
+}
+.avatar-stack-item {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #FFFFFF;
+    margin-left: -8px;
+    object-fit: cover;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: var(--hr-corporate-blue);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.avatar-stack-item:first-child {
+    margin-left: 0;
+}
+.avatar-stack-more {
+    background: #E2E8F0;
+    color: var(--hr-text-main);
+}
+
+/* Employee Grid View Card */
+.emp-grid-card {
+    background: #FFFFFF;
+    border: 1px solid var(--hr-border);
+    border-radius: var(--hr-radius);
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    text-decoration: none;
+    color: inherit;
+}
+.emp-grid-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hr-shadow-lg);
+    border-color: var(--hr-sky-blue);
+    color: inherit;
+}
+.emp-grid-photo-wrap {
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(135deg, #E9F6FC 0%, #F4F7FB 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--hr-border-light);
+    position: relative;
+}
+.emp-grid-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+}
+.emp-grid-initials {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: var(--hr-corporate-blue);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(23, 79, 145, 0.22);
+}
+
+/* Organizational Chart Tree */
+.org-chart-scroll {
+    overflow-x: auto;
+    padding: 1.5rem 1rem 2rem;
+}
+.org-tree ul {
+    padding-top: 22px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
+.org-tree li {
+    text-align: center;
+    position: relative;
+    padding: 22px 6px 0;
+}
+.org-tree li::before,
+.org-tree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    border-top: 2px solid #CBD5E1;
+    width: 50%;
+    height: 22px;
+}
+.org-tree li::after {
+    right: auto;
+    left: 50%;
+    border-left: 2px solid #CBD5E1;
+}
+.org-tree li:only-child::after,
+.org-tree li:only-child::before {
+    display: none;
+}
+.org-tree li:only-child {
+    padding-top: 0;
+}
+.org-tree li:first-child::before,
+.org-tree li:last-child::after {
+    border: 0 none;
+}
+.org-tree li:last-child::before {
+    border-right: 2px solid #CBD5E1;
+    border-radius: 0 6px 0 0;
+}
+.org-tree li:first-child::after {
+    border-radius: 6px 0 0 0;
+}
+.org-tree ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-left: 2px solid #CBD5E1;
+    width: 0;
+    height: 22px;
+}
+.org-tree > ul > li::before,
+.org-tree > ul > li::after {
+    display: none;
+}
+.org-tree > ul > li {
+    padding-top: 0;
+}
+
+.org-node-card {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: #FFFFFF;
+    border: 1px solid var(--hr-border);
+    border-radius: var(--hr-radius);
+    padding: 0.9rem 1rem;
+    min-width: 195px;
+    max-width: 220px;
+    box-shadow: var(--hr-shadow-sm);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    position: relative;
+}
+.org-node-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hr-shadow);
+    border-color: var(--hr-sky-blue);
+}
+.org-node-card.org-node-exec {
+    border-top: 3px solid var(--hr-corporate-blue);
+}
+.org-node-card.org-node-head {
+    border-top: 3px solid var(--hr-sky-blue);
+}
+.org-node-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #E2E8F0;
+    margin-bottom: 0.5rem;
+}
+.org-node-initials {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--hr-corporate-blue);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+.org-toggle-btn {
+    margin-top: 0.45rem;
+    font-size: 0.72rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+}
+
+@media (max-width: 767.98px) {
+    .org-segmented-nav {
+        width: 100%;
+    }
+    .org-seg-link {
+        flex: 1 1 auto;
+        justify-content: center;
+        padding: 0.45rem 0.6rem;
+        font-size: 0.8rem;
+    }
+}

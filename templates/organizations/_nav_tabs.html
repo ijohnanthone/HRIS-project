@@ -1,0 +1,25 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <nav class="org-segmented-nav" aria-label="Organization views">
+        <a href="{% url 'organizations:company_structure' %}"
+           class="org-seg-link {% if active_org_tab == 'overview' %}active{% endif %}">
+            <i class="bi bi-building"></i>
+            <span>Company Overview</span>
+        </a>
+        <a href="{% url 'organizations:org_chart' %}"
+           class="org-seg-link {% if active_org_tab == 'org_chart' %}active{% endif %}">
+            <i class="bi bi-diagram-3"></i>
+            <span>Organizational Chart</span>
+        </a>
+        <a href="{% url 'organizations:directory' %}"
+           class="org-seg-link {% if active_org_tab == 'directory' %}active{% endif %}">
+            <i class="bi bi-people"></i>
+            <span>Employee Directory</span>
+        </a>
+    </nav>
+
+    {% if is_hr_team %}
+    <a href="{% url 'employees:onboard_start' %}" class="btn btn-primary btn-sm fw-semibold px-3">
+        <i class="bi bi-person-plus me-1"></i> Onboard Employee
+    </a>
+    {% endif %}
+</div>

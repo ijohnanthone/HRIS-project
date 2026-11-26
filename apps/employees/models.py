@@ -58,6 +58,14 @@ class Employee(models.Model):
         related_name='employees',
         help_text=_('Assigned job role / title')
     )
+    manager = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='direct_reports',
+        help_text=_('Direct reporting manager or supervisor')
+    )
 
     employment_type = models.CharField(
         _('employment type'),

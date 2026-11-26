@@ -1,0 +1,140 @@
+{% if view_mode == 'grid' %}
+<!-- GRID VIEW -->
+<div class="row g-3">
+    {% for emp in employees %}
+    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+        <a href="{% url 'employees:detail' emp.id %}" class="emp-grid-card">
+            <div class="emp-grid-photo-wrap">
+                {% if emp.avatar_url %}
+                <img src="{{ emp.avatar_url }}" alt="{{ emp.full_name }}" class="emp-grid-photo">
+                {% else %}
+                <div class="emp-grid-initials">{{ emp.initials }}</div>
+                {% endif %}
+                <span class="badge badge-status {{ emp.status_badge_class }} position-absolute top-0 end-0 m-2 shadow-sm">
+                    {{ emp.get_status_display }}
+                </span>
+            </div>
+            <div class="p-3 d-flex flex-column flex-grow-1 justify-content-between">
+                <div>
+                    <h6 class="fw-bold text-dark mb-1 text-truncate">{{ emp.full_name }}</h6>
+                    <div class="text-primary small fw-medium mb-2 text-truncate">{{ emp.position.title }}</div>
+                </div>
+                <div class="border-top pt-2 mt-1 d-flex justify-content-between align-items-center small text-muted">
+                    <span class="text-truncate me-2">{{ emp.department.code }}</span>
+                    <code>{{ emp.employee_id_number }}</code>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card-hr text-center py-5 text-muted">
+            <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
+            No employees found matching your filters.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- LIST VIEW -->
+<div class="card-hr overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hr align-middle">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Employee ID</th>
+                    <th>Position</th>
+                    <th>Department</th>
+                    <th>Manager</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if emp.avatar_url %}
+                            <img src="{{ emp.avatar_url }}" alt="{{ emp.full_name }}" class="rounded-circle border flex-shrink-0" style="width: 36px; height: 36px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold small flex-shrink-0"
+                                 style="width: 36px; height: 36px; background-color: var(--hr-corporate-blue);">
+                                {{ emp.initials }}
+                            </div>
+                            {% endif %}
+                            <div>
+                                <a href="{% url 'employees:detail' emp.id %}" class="fw-semibold text-dark text-decoration-none d-block">
+                                    {{ emp.full_name }}
+                                </a>
+                                <span class="small text-muted">{{ emp.get_work_location_display }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><code>{{ emp.employee_id_number }}</code></td>
+                    <td>{{ emp.position.title }}</td>
+                    <td>{{ emp.department.name }}</td>
+                    <td>
+                        {% if emp.manager %}
+                        <a href="{% url 'employees:detail' emp.manager.id %}" class="small text-decoration-none">{{ emp.manager.full_name }}</a>
+                        {% else %}
+                        <span class="small text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-status {{ emp.status_badge_class }}">
+                            {{ emp.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                            <a href="{% url 'employees:detail' emp.id %}" class="btn btn-sm btn-light border" title="View Profile">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if is_hr_team %}
+                            <a href="{% url 'employees:edit' emp.id %}" class="btn btn-sm btn-light border text-primary" title="Edit Profile">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
+                        No employees found matching your filters.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Pagination Footer -->
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4">
+    <span class="text-muted small">
+        Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} employees
+    </span>
+    <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?view={{ view_mode }}&q={{ q|urlencode }}&status={{ current_status|urlencode }}&sort={{ current_sort|urlencode }}&per_page={{ per_page }}&department={{ current_department|default:'' }}&position={{ current_position|default:'' }}&location={{ current_location|default:''|urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        <li class="page-item active">
+            <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        </li>
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?view={{ view_mode }}&q={{ q|urlencode }}&status={{ current_status|urlencode }}&sort={{ current_sort|urlencode }}&per_page={{ per_page }}&department={{ current_department|default:'' }}&position={{ current_position|default:'' }}&location={{ current_location|default:''|urlencode }}&page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}

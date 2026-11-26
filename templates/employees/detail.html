@@ -90,6 +90,16 @@
                     <div class="col-sm-8 fw-medium">{{ employee.department.name }}</div>
                 </div>
                 <div class="row py-2 border-bottom">
+                    <div class="col-sm-4 text-muted small fw-semibold">Reporting Manager:</div>
+                    <div class="col-sm-8 fw-medium">
+                        {% if employee.manager %}
+                            <a href="{% url 'employees:detail' employee.manager.id %}" class="text-decoration-none">{{ employee.manager.full_name }}</a>
+                        {% else %}
+                            <span class="text-muted">None (Top-Level / Unassigned)</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row py-2 border-bottom">
                     <div class="col-sm-4 text-muted small fw-semibold">Work Location:</div>
                     <div class="col-sm-8 text-secondary">{{ employee.get_work_location_display }}</div>
                 </div>

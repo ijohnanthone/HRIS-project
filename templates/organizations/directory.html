@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Directory | HRequest{% endblock %}
+{% block page_title %}Employee Directory{% endblock %}
+
+{% block content %}
+{% include 'organizations/_nav_tabs.html' %}
+
+<!-- Search & Multi-Faceted Filters -->
+<div class="card-hr mb-4">
+    <form method="get" class="card-hr-body py-3">
+        <input type="hidden" name="view" value="{{ view_mode }}">
+        <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-4 col-lg-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search name or ID...">
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <select name="department" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Departments</option>
+                    {% for d in departments %}
+                    <option value="{{ d.id }}" {% if current_department == d.id|stringformat:'s' %}selected{% endif %}>{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <select name="position" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Positions</option>
+                    {% for pos in positions %}
+                    <option value="{{ pos.id }}" {% if current_position == pos.id|stringformat:'s' %}selected{% endif %}>{{ pos.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    {% for val, label in statuses %}
+                    <option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <select name="location" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Locations</option>
+                    {% for val, label in locations %}
+                    <option value="{{ val }}" {% if current_location == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6 col-lg-1 d-flex justify-content-end gap-1">
+                <button type="submit" class="btn btn-primary btn-sm" title="Search"><i class="bi bi-search"></i></button>
+                <a href="{% url 'organizations:directory' %}?view={{ view_mode }}" class="btn btn-light border btn-sm" title="Reset"><i class="bi bi-x-lg"></i></a>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3 pt-2 border-top">
+            <div class="small text-muted">
+                <strong>{{ total_filtered }}</strong> employee{{ total_filtered|pluralize }} found
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <select name="sort" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                    <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Sort: Name (A–Z)</option>
+                    <option value="-name" {% if current_sort == '-name' %}selected{% endif %}>Sort: Name (Z–A)</option>
+                    <option value="id" {% if current_sort == 'id' %}selected{% endif %}>Sort: Employee ID</option>
+                    <option value="department" {% if current_sort == 'department' %}selected{% endif %}>Sort: Department</option>
+                    <option value="position" {% if current_sort == 'position' %}selected{% endif %}>Sort: Position</option>
+                </select>
+                <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                    <option value="10" {% if per_page == 10 %}selected{% endif %}>10 / page</option>
+                    <option value="25" {% if per_page == 25 %}selected{% endif %}>25 / page</option>
+                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50 / page</option>
+                </select>
+                <div class="btn-group btn-group-sm" role="group" aria-label="View mode">
+                    <a href="?view=grid&q={{ q|urlencode }}&department={{ current_department }}&position={{ current_position }}&status={{ current_status|urlencode }}&location={{ current_location|urlencode }}&sort={{ current_sort|urlencode }}&per_page={{ per_page }}"
+                       class="btn {% if view_mode == 'grid' %}btn-primary{% else %}btn-light border{% endif %}" title="Grid View">
+                        <i class="bi bi-grid-3x3-gap"></i>
+                    </a>
+                    <a href="?view=list&q={{ q|urlencode }}&department={{ current_department }}&position={{ current_position }}&status={{ current_status|urlencode }}&location={{ current_location|urlencode }}&sort={{ current_sort|urlencode }}&per_page={{ per_page }}"
+                       class="btn {% if view_mode == 'list' %}btn-primary{% else %}btn-light border{% endif %}" title="List View">
+                        <i class="bi bi-list-ul"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% include 'organizations/_employee_views.html' %}
+{% endblock %}

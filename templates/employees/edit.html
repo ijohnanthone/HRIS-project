@@ -107,17 +107,22 @@
                 {{ form.position }}
                 {% if form.position.errors %}<div class="text-danger small mt-1">{{ form.position.errors.0 }}</div>{% endif %}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold small text-secondary" for="{{ form.manager.id_for_label }}">Reporting Manager / Supervisor</label>
+                {{ form.manager }}
+                {% if form.manager.errors %}<div class="text-danger small mt-1">{{ form.manager.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
                 <label class="form-label fw-semibold small text-secondary" for="{{ form.work_location.id_for_label }}">Work Location / Site <span class="text-danger">*</span></label>
                 {{ form.work_location }}
                 {% if form.work_location.errors %}<div class="text-danger small mt-1">{{ form.work_location.errors.0 }}</div>{% endif %}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label class="form-label fw-semibold small text-secondary" for="{{ form.employment_type.id_for_label }}">Employment Type</label>
                 {{ form.employment_type }}
                 {% if form.employment_type.errors %}<div class="text-danger small mt-1">{{ form.employment_type.errors.0 }}</div>{% endif %}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label class="form-label fw-semibold small text-secondary" for="{{ form.status.id_for_label }}">Status</label>
                 {{ form.status }}
                 {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{% endif %}

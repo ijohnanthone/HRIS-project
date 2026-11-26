@@ -1,112 +1,131 @@
 {% extends 'base.html' %}
 
 {% block title %}Company Structure | HRequest{% endblock %}
-{% block page_title %}Organization & Structure{% endblock %}
+{% block page_title %}Organization &amp; Company Structure{% endblock %}
 
 {% block content %}
-<!-- Subtabs matching reference screen 7 -->
-<div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-4">
-    {% if is_hr_team %}
-    <a href="{% url 'employees:list' %}" class="text-secondary fw-semibold text-decoration-none">Employees</a>
-    {% endif %}
-    <a href="{% url 'organizations:company_structure' %}" class="fw-bold text-primary border-bottom border-primary border-2 pb-3 mb-n3">Company Structure</a>
+{% include 'organizations/_nav_tabs.html' %}
+
+<!-- Summary KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card-hero h-100">
+            <div class="kpi-card-hero-label">Total Employees</div>
+            <div class="kpi-card-hero-value">{{ total_employees }}</div>
+            <div class="small mt-2 opacity-75">Across all departments</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card">
+            <div class="kpi-card-label">Total Departments</div>
+            <div class="kpi-card-value text-primary">{{ total_departments }}</div>
+            <div class="kpi-card-sub mt-1">Active organizational units</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card">
+            <div class="kpi-card-label">Active Employees</div>
+            <div class="kpi-card-value" style="color: var(--hr-success-text);">{{ active_employees }}</div>
+            <div class="kpi-card-sub mt-1">Currently active staff</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card">
+            <div class="kpi-card-label">Inactive / Other</div>
+            <div class="kpi-card-value text-secondary">{{ inactive_employees }}</div>
+            <div class="kpi-card-sub mt-1">Onboarding, leave, or terminated</div>
+        </div>
+    </div>
 </div>
 
-<div class="row">
-    <!-- Departments Hierarchy List (Left Column) -->
-    <div class="col-lg-4 col-md-5 mb-4">
-        <h6 class="text-muted fw-bold text-uppercase small mb-3">Departments ({{ total_departments }})</h6>
-        <div class="d-flex flex-column gap-3">
-            {% for dept in departments %}
-            <div class="card-hr p-3 mb-0" style="border-left: 4px solid var(--hr-sky-blue);">
-                <div class="d-flex justify-content-between align-items-start mb-2">
+<!-- Compact Department Cards -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0">
+        <i class="bi bi-diagram-2 text-primary me-2"></i>Departments
+    </h5>
+    <span class="text-muted small">Select a department to view and manage its team</span>
+</div>
+
+<div class="row g-3">
+    {% for dept in departments %}
+    <div class="col-12 col-md-6 col-xl-4">
+        <a href="{% url 'organizations:department_detail' dept.id %}" class="dept-overview-card">
+            <div>
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                     <div>
-                        <h6 class="fw-bold mb-0 text-dark">{{ dept.name }}</h6>
-                        <span class="small text-muted">{{ dept.code }}</span>
+                        <h5 class="fw-bold text-dark mb-1">{{ dept.name }}</h5>
+                        <span class="badge bg-light text-primary border fw-semibold">{{ dept.code }}</span>
                     </div>
-                    <span class="badge bg-light text-primary border rounded-pill">
-                        {{ dept.total_employees }} members
+                    <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background: var(--hr-sky-blue-light); color: var(--hr-corporate-blue);">
+                        {{ dept.member_count }} Employee{{ dept.member_count|pluralize }}
                     </span>
                 </div>
-                {% if dept.head_of_department %}
-                <div class="d-flex align-items-center gap-2 mt-2 pt-2 border-top">
-                    {% if dept.head_of_department.avatar_url %}
-                    <img src="{{ dept.head_of_department.avatar_url }}" alt="{{ dept.head_of_department.full_name }}" class="rounded-circle border flex-shrink-0" style="width: 26px; height: 26px; object-fit: cover;">
-                    {% else %}
-                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white small fw-bold flex-shrink-0" 
-                         style="width: 26px; height: 26px; background: var(--hr-corporate-blue); font-size: 0.75rem;">
-                        {{ dept.head_of_department.initials }}
-                    </div>
-                    {% endif %}
-                    <div class="small">
-                        <span class="text-muted">Head:</span> <strong class="text-dark">{{ dept.head_of_department.full_name }}</strong>
-                    </div>
-                </div>
+
+                {% if dept.description %}
+                <p class="text-muted small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{ dept.description }}
+                </p>
                 {% endif %}
             </div>
-            {% endfor %}
-        </div>
-    </div>
 
-    <!-- Department Members Roster (Right Column matching Reference Screen 7) -->
-    <div class="col-lg-8 col-md-7 mb-4">
-        <h6 class="text-muted fw-bold text-uppercase small mb-3">Company Teams & Members</h6>
-
-        {% for dept in departments %}
-        <div class="card-hr mb-4">
-            <div class="card-hr-header bg-light">
-                <div>
-                    <h5 class="card-hr-title">{{ dept.name }}</h5>
-                    <span class="small text-muted">{{ dept.description }}</span>
-                </div>
-                <span class="badge bg-primary rounded-pill">{{ dept.total_employees }} Employees</span>
-            </div>
-            <div class="card-hr-body">
-                <div class="row g-3">
-                    {% for emp in dept.employees.all %}
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded-3 bg-white h-100">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                {% if emp.avatar_url %}
-                                <img src="{{ emp.avatar_url }}" alt="{{ emp.full_name }}" class="rounded-circle border flex-shrink-0" style="width: 36px; height: 36px; object-fit: cover;">
-                                {% else %}
-                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold small flex-shrink-0"
-                                     style="width: 36px; height: 36px; background-color: var(--hr-corporate-blue);">
-                                    {{ emp.initials }}
-                                </div>
-                                {% endif %}
-                                <div class="min-w-0">
-                                    <a href="{% url 'employees:detail' emp.id %}" class="fw-bold text-dark text-decoration-none d-block text-truncate">
-                                        {{ emp.full_name }}
-                                    </a>
-                                    <span class="small text-primary d-block text-truncate">{{ emp.position.title }}</span>
-                                </div>
+            <div class="border-top pt-3 mt-2">
+                <!-- Department Head -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    {% if dept.head_of_department %}
+                        {% if dept.head_of_department.avatar_url %}
+                        <img src="{{ dept.head_of_department.avatar_url }}" alt="{{ dept.head_of_department.full_name }}"
+                             class="rounded-circle border flex-shrink-0" style="width: 38px; height: 38px; object-fit: cover;">
+                        {% else %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold small flex-shrink-0"
+                             style="width: 38px; height: 38px; background: var(--hr-corporate-blue);">
+                            {{ dept.head_of_department.initials }}
+                        </div>
+                        {% endif %}
+                        <div class="min-w-0">
+                            <div class="small fw-semibold text-dark text-truncate">
+                                Department Head: {{ dept.head_of_department.full_name }}
                             </div>
-                            <div class="small text-muted border-top pt-2 mt-2">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Status:</span>
-                                    <span class="badge badge-status {{ emp.status_badge_class }}">{{ emp.get_status_display }}</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Location:</span>
-                                    <span class="text-dark">{{ emp.get_work_location_display }}</span>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <span>Email:</span>
-                                    <span class="text-dark text-truncate ms-2" style="max-width: 160px;">{{ emp.user.email }}</span>
-                                </div>
+                            <div class="text-muted text-truncate" style="font-size: 0.75rem;">
+                                {{ dept.head_of_department.position.title }}
                             </div>
                         </div>
+                    {% else %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-light text-muted border flex-shrink-0"
+                             style="width: 38px; height: 38px;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div class="small text-muted">Department Head: Unassigned</div>
+                    {% endif %}
+                </div>
+
+                <!-- Overlapping Member Avatars + Action Hint -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="avatar-stack">
+                        {% for member in dept.preview_members %}
+                            {% if member.avatar_url %}
+                            <img src="{{ member.avatar_url }}" alt="{{ member.full_name }}" title="{{ member.full_name }}" class="avatar-stack-item">
+                            {% else %}
+                            <span class="avatar-stack-item" title="{{ member.full_name }}">{{ member.initials }}</span>
+                            {% endif %}
+                        {% endfor %}
+                        {% if dept.extra_members_count > 0 %}
+                        <span class="avatar-stack-item avatar-stack-more">+{{ dept.extra_members_count }}</span>
+                        {% endif %}
                     </div>
-                    {% empty %}
-                    <div class="col-12 text-center text-muted py-3">
-                        No team members currently assigned to this department.
-                    </div>
-                    {% endfor %}
+                    <span class="small fw-semibold text-primary">
+                        View Team <i class="bi bi-arrow-right ms-1"></i>
+                    </span>
                 </div>
             </div>
-        </div>
-        {% endfor %}
+        </a>
     </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card-hr text-center py-5 text-muted">
+            <i class="bi bi-building fs-1 d-block mb-2"></i>
+            No departments configured yet.
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

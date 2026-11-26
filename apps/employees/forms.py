@@ -128,6 +128,7 @@ class EmployeeEditForm(forms.ModelForm):
             'last_name',
             'department',
             'position',
+            'manager',
             'employment_type',
             'status',
             'work_location',
@@ -147,6 +148,7 @@ class EmployeeEditForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'department': forms.Select(attrs={'class': 'form-select'}),
             'position': forms.Select(attrs={'class': 'form-select'}),
+            'manager': forms.Select(attrs={'class': 'form-select'}),
             'employment_type': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
             'work_location': forms.Select(attrs={'class': 'form-select'}),
@@ -162,6 +164,9 @@ class EmployeeEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['position'].queryset = Position.objects.filter(is_active=True)
+        if self.instance and self.instance.pk:
+            self.fields['manager'].queryset = Employee.objects.exclude(pk=self.instance.pk).order_by('first_name', 'last_name')
+            self.fields['manager'].required = False
         if self.instance and self.instance.pk and self.instance.user:
             self.fields['work_email'].initial = self.instance.user.email
 
