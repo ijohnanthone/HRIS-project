@@ -42,7 +42,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.core.middleware.SiteUnavailableMiddleware',
 ]
+
+# Toggle to lock the entire website with a "Website Unavailable" pop-up
+SITE_UNAVAILABLE = os.getenv('SITE_UNAVAILABLE', 'true').lower() in ('1', 'true', 'yes')
 
 ROOT_URLCONF = 'config.urls'
 
